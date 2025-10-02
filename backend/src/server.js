@@ -1,17 +1,21 @@
 import express from 'express';
 import cors from 'cors';
+import cookieParser from "cookie-parser"
 import { ENV } from './lib/env.js';
 import authRouter from './routes/auth.route.js';
+import { connectDB } from './lib/db.js';
 
 const app = express();
 
-app.use(cors());
 
-app.use(express.json());    
+app.use(express.json());   
+app.use(cors({origin:ENV.CLIENT_URL, credentials:true}))
+app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 
 
 app.listen(ENV.PORT, () => {
-    console.log("Backend is running on PORT ", ENV.PORT)
+    console.log("Backend is running on PORT ", ENV.PORT);
+    connectDB();
 })
