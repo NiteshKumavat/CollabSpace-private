@@ -1,0 +1,1 @@
+//TODO : create a route for profile form submission and fetching and updating the user profile and use the protectRoute middleware to protect these routes

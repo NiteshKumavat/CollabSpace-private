@@ -19,7 +19,6 @@ export const login = async(req, res) => {
             _id : newUser._id,
             fullName : newUser.fullName,
             email : newUser.email,
-            profilePic : newUser.profilePic
         });
     } catch (error) {
         console.log("Error in login : ", error)
@@ -64,7 +63,7 @@ export const register = async (req, res) => {
 				_id : newUser._id,
 				fullName : newUser.fullName,
 				email : newUser.email,
-				profilePic : newUser.profilePic
+				isNewUser : true
 			});
 		}
 		else{

@@ -16,11 +16,6 @@ const userSchema = new mongoose.Schema({
         minlength : 6,   
     },
 
-    profilePic : {
-        type : String,
-        default : "",
-    }
-
 }, {timestamps : true});
 
 const User = mongoose.model("User", userSchema);
