@@ -1,3 +1,18 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+
+@media (max-width : 800px){
+    .image-container{
+        display: none;
+    }
+
+    .auth-container{
+        width: 80%;
+    }
+
+    .container{
+        grid-template-columns: 100%;
+    }
+}
