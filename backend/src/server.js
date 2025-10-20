@@ -15,7 +15,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRouter);
 app.use("/api/profile", profileRouter);
-app.use("/api/profile", profileRouter);
+
 
 
 app.listen(ENV.PORT, () => {

@@ -1,6 +1,7 @@
 import Profile from '../models/Profile.js';
 
 export const createProfile = async (req, res) => {
+    console.log("Hello from createProfile");
     const {
         fullName,
         bio,
@@ -16,14 +17,10 @@ export const createProfile = async (req, res) => {
         personalWebsite
     } = req.body;
 
-    if (!fullName) {
-        return res.status(400).json({ message: "Full name is required" });
-    }
-
     try {
         const profile = new Profile({
             user: req.user.id,
-            fullName,
+            fullName : req.user.fullName,
             bio,
             location,
             skills,
@@ -101,3 +98,19 @@ export const updateProfile = async (req, res) => {
         res.status(500).json({ message: 'Server error' });
     }
 };
+
+
+export const updateProfilePicture = async (req, res) => {
+    try {
+        let profile = await Profile.findOne({ user: req.user.id });
+        if (!profile) {
+            return res.status(404).json({ message: 'Profile not found' });
+        };
+        profile.profilePicture = req.body.profilePicture || profile.profilePicture;
+        await profile.save();
+        res.json(profile);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
+}
