@@ -1,13 +1,17 @@
 import { generateToken } from "../lib/utils.js"
 import bcrypt from "bcryptjs";
 import User from "../models/User.js";
-import { ENV } from "../lib/env.js";
+import Profile from "../models/Profile.js";
+
 
 export const login = async(req, res) => {
-    const {email, password} = req.body;
-
+    
     try {
-        const newUser = await User.findOne(email);
+		const {email, password} = req.body;
+		
+
+        const newUser = await User.findOne({email});
+		
         if(!newUser) return res.status(400).json({message : "Invalid Credentials"});
 
         const isPasswordCorrect = await bcrypt.compare(password, newUser.password);
@@ -21,8 +25,7 @@ export const login = async(req, res) => {
             email : newUser.email,
         });
     } catch (error) {
-        console.log("Error in login : ", error)
-        res.statatus(500).json({message : "Internal Server Error"})
+        res.status(500).json({message : "Internal Server Error"})
     }
 }
 
@@ -30,6 +33,7 @@ export const login = async(req, res) => {
 export const register = async (req, res) => {
     const {fullName, email, password} = req.body;
 	try{
+		
 		if(!fullName || !email || !password) {
 			return res.status(400).json({message: "All fields are required"});
 		}
@@ -43,6 +47,7 @@ export const register = async (req, res) => {
 			return res.status(400).json({message: "Invalid email format"});
 		}
 
+
 		const user = await User.findOne({email});
 		if (user) return res.status(400).json({message : "User already exists in database"})
 
@@ -55,9 +60,19 @@ export const register = async (req, res) => {
 			password : hashedPassword
 		});
 
+		
+
 		if(newUser){
 			
-			const savedUser = await newUser.save();
+			await newUser.save();
+			const newProfile = new Profile({
+				user : newUser._id,
+				fullName,
+				email,
+			});
+
+			await newProfile.save();
+
 			generateToken(newUser._id, res);
 			res.status(201).json({
 				_id : newUser._id,
@@ -70,7 +85,7 @@ export const register = async (req, res) => {
 			res.status(400).json({message : "Error creating user"});
 		}
 	}catch(error){
-        console.log(error)
+		console.log(error);
 		res.status(500).json({message : "INTERNAL SERVER ERROR"})
 	}
 }
