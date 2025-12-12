@@ -75,7 +75,6 @@ const ProjectDescription = ({ onClose, project, mode, userRole, setMode }) => {
   };
 
   const handleSubmit = async () => {
-    // Basic validation
     if (!form.title.trim()) {
       alert("Please enter a project title");
       return;
@@ -105,11 +104,13 @@ const ProjectDescription = ({ onClose, project, mode, userRole, setMode }) => {
       console.error("Error saving project:", error);
     } finally {
       setLoading(false);
+      window.location.reload();
     }
   };
 
   const handleDelete = async () => {
     if (!window.confirm("Are you sure you want to delete this project?")) {
+      
       return;
     }
 
@@ -123,6 +124,7 @@ const ProjectDescription = ({ onClose, project, mode, userRole, setMode }) => {
       console.error("Error deleting project:", error);
     } finally {
       setLoading(false);
+      window.location.reload();
     }
   };
 

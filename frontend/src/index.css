@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@property --border-angle {
+  inherits: false;
+  initial-value: 0deg;
+  syntax: "<angle>";
+}
+
 
 @media (max-width : 800px){
     .image-container{

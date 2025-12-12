@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 
 export default function ProfileRequests({ id }) {
 
-  const { userProjects, fetchUserProjects, acceptRequest } = useProjectStore();
+  const { userProjects, fetchUserProjects, acceptRequest, rejectRequest } = useProjectStore();
   const [requests, setRequests] = useState([]);
 
   useEffect(() => {
@@ -13,6 +13,12 @@ export default function ProfileRequests({ id }) {
 
   const acceptHandler = async(projectId, userId) => {
     await acceptRequest(projectId, userId)
+    window.location.reload();
+  }
+
+  const rejectHandler = async(projectId, userId) => {
+    await rejectRequest(projectId, userId)
+    window.location.reload();
   }
 
 
@@ -51,7 +57,7 @@ export default function ProfileRequests({ id }) {
               requestedAt={new Date(req.requestedAt).toLocaleDateString()}
               status={req.status}
               onApprove={() => acceptHandler(req.projectId, req.userId)}
-              onReject={() => console.log("Reject", req.projectId, req.userId)}
+              onReject={() => rejectHandler(req.projectId, req.userId)}
             />
           ))
         ) : (

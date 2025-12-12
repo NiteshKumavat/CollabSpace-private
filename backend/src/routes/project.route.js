@@ -4,6 +4,7 @@ import {
   getUserProjects,
   createProject,
   updateProject,
+  leaveProject,
   deleteProject,
   requestToJoin,
   acceptRequest,
@@ -20,6 +21,8 @@ router.get("/:userId/projects", protectRoute, getUserProjects);
 router.post("/", protectRoute, createProject);
 
 router.put("/:projectId", protectRoute, updateProject);
+
+router.put("/:projectId/leave", protectRoute, leaveProject);
 
 router.delete("/:projectId", protectRoute, deleteProject);
 

@@ -63,9 +63,23 @@ export const useProjectStore = create((set, get) => ({
   },
 
 
+  leaveProject: async (projectId) => {
+    try {
+      await axiosInstance.put(`/project/${projectId}/leave`);
+      set({
+        projects: get().projects.filter((proj) => proj._id !== projectId),
+      });
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message };
+    }
+  },
+
+
+
   deleteProject: async (projectId) => {
     try {
-      await axiosInstance.delete(`/api/project/${projectId}`);
+      await axiosInstance.delete(`/project/${projectId}`);
 
       set({
         projects: get().projects.filter((proj) => proj._id !== projectId),

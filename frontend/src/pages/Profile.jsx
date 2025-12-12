@@ -144,7 +144,7 @@ export default function Profile() {
                     project={{}}
                     onClose={() => setShowCreateProject(false)}
                     userRole={isOwner ? "admin" : "viewer"}
-                    setMode={() => {}} // Empty function for create mode
+                    setMode={() => {}}
                 />
             )}
         </div>

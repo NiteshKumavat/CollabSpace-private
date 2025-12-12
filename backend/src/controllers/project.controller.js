@@ -108,6 +108,26 @@ export const updateProject = async (req, res) => {
   }
 };
 
+export const leaveProject = async(req, res) => {
+  try {
+    const projectId = req.params.projectId;
+    const userId = req.user._id;
+
+    const project = await Project.findById(projectId);
+
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    project.team = project.team.filter(member => member.userId.toString() !== userId.toString());
+
+    await project.save();
+
+    return res.status(200).json({ message: "Left the project successfully" });
+    
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+}
+
 
 export const deleteProject = async (req, res) => {
   try {
