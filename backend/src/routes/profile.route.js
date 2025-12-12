@@ -1,14 +1,16 @@
 import express from 'express';
-import { getProfile, updateProfile, blockUser, unblockUser, availability } from '../controllers/profile.controller.js';
+import { getAllUsers ,getProfile, updateProfile, blockUser, unblockUser, availability, deleteProfile } from '../controllers/profile.controller.js';
 import { protectRoute } from '../middleware/auth.middleware.js';
 
 
 const router = express.Router();
 
+router.get("/users", protectRoute, getAllUsers);
 router.get("/:Id", protectRoute, getProfile);
-router.post("/update", protectRoute, updateProfile);
+router.put("/update", protectRoute, updateProfile);
 router.put("/unblock/:userId", protectRoute, unblockUser);
 router.put('/block/:userId', protectRoute, blockUser);
-
+router.put('/availability', protectRoute, availability);
+router.delete('/delete', protectRoute, deleteProfile);
 
 export default router;

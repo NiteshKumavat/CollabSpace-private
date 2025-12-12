@@ -11,6 +11,7 @@ export const login = async(req, res) => {
 		
 
         const newUser = await User.findOne({email});
+		console.log(newUser);
 		
         if(!newUser) return res.status(400).json({message : "Invalid Credentials"});
 
@@ -93,4 +94,16 @@ export const register = async (req, res) => {
 export const logout = async (req, res) => {
     res.cookie("jwt", "", {maxAge : 0});
     res.status(200).json({message : "Logged Out Successfully"})
+}
+
+export const deleteUser = async (req, res) => {
+	try {
+		const user = req.user;
+
+		await User.findByIdAndDelete(user._id);
+		res.status(200).json({message : "User deleted successfully"});
+	} catch(error){
+		console.log(error);
+		res.status(500).json({message : "INTERNAL SERVER ERROR"})
+	}
 }

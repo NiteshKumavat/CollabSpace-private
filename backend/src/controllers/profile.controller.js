@@ -1,132 +1,152 @@
 import Profile from "../models/Profile.js";
 import cloudinary from "../lib/cloudinary.js";
-import Request from "../models/request.model.js";
 
 
-export const getProfile = async (req, res) => {
-    try {
-        const ownerId = req.params.Id; 
-        const viewerId = req.user._id; 
+export const getAllUsers = async (req, res) => {
+  try {
+    const viewerId = req.user._id;
 
+    const profiles = await Profile.find({
+      user: { $ne: viewerId },
+      blockList: { $nin: [viewerId] }
+    })
+      .sort({ isAvailableForCollab: -1 });
 
-        const ownerProfile = await Profile.findOne({ user: ownerId });
+    if (!profiles.length) return res.status(404).json({ message: "No profiles found" });
 
-        if (!ownerProfile) {
-            return res.status(404).json({ message: "Profile Not Found" });
-        }
+    res.status(200).json({ profiles });
 
-        if (ownerId.toString() === viewerId.toString()) {
-            return res.status(200).json({ profile: ownerProfile });
-        }
-
-
-        const isBlocked = ownerProfile.blockList?.some(
-            user => user.toString() === viewerId.toString()
-        );
-
-        console.log(ownerProfile.blockList);
-        console.log("isBlocked:", isBlocked);
-
-        if (isBlocked) {
-            return res.status(403).json({ message: "You are blocked by this user" });
-        }
-
-        const requests = null;
-        if (ownerId.toString() !== viewerId.toString()) {
-            requests = await Request.find({
-                To: ownerId,
-                status: "pending"
-            });
-        }
-
-
-        return res.status(200).json({ profile: ownerProfile, Request : requests });
-
-    } catch (error) {
-        console.error(error);
-        return res.status(500).json({ message: "Internal Server Error" });
-    }
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };
 
 
+
+export const getProfile = async (req, res) => {
+  try {
+    const ownerId = req.params.Id;
+    const viewerId = req.user._id;
+
+    const ownerProfile = await Profile.findOne({ user: ownerId });
+
+
+    if (!ownerProfile) return res.status(404).json({ message: "Profile Not Found" });
+
+    const isBlocked = ownerProfile.blockList.includes(viewerId.toString());
+    if (isBlocked) return res.status(403).json({ message: "You are blocked by this user" });
+
+    return res.status(200).json({ profile: ownerProfile });
+
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+
 export const updateProfile = async (req, res) => {
-    try {
-        const Id = req.user._id;
-        const updates = req.body;
+  
+  try {
+    const userId = req.user._id;
+    const updates = req.body;
 
-        if(updates.profilePicture){
-            const uploadResponse = await cloudinary.uploader.upload(updates.profilePicture);
-            updates.profilePicture = uploadResponse.secure_url
-        }
 
-        const updateProfile = await Profile.findByIdAndUpdate(
-            {user : Id}, updates, {new : true}
-        );
-
-        await updateProfile.save();
-
-        return res.status(200).json(updateProfile)
-
-        
-    } catch (error) {
-        return res.status(500).json({message : "Internal Server Error"});
+    if (updates?.profilePicture) {
+      const upload = await cloudinary.uploader.upload(updates.profilePicture);
+      updates.profilePicture = upload.secure_url;
     }
-}
+
+    const updated = await Profile.findOneAndUpdate(
+      { user: userId },
+      updates,
+      { new: true }
+    );
+
+    console.log(updated);
+    res.status(200).json(updated);
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
 
 
 export const blockUser = async (req, res) => {
-    try {
-        const blockerId = req.user._id;
-        const blockedId = req.params.userId;
+  try {
+    const blockerId = req.user._id;
+    const blockedId = req.params.userId;
 
-        const blockedUser = await Profile.findOneAndUpdate(
-            {
-                user : blockerId
-            },
-            {
-                $addToSet : { blockList : blockedId}
-            }
-        );
+    await Profile.findOneAndUpdate(
+      { user: blockerId },
+      { $addToSet: { blockList: blockedId } }
+    );
 
-        await blockedUser.save();
+    res.json({ message: "User blocked successfully." });
 
-        return res.json({ message: "User blocked successfully." });
-    } catch (error) {
-        return res.status(500).json({message : "Internal Server Error"});
-    }
-}
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
 
 export const unblockUser = async (req, res) => {
-    try {
-        const blockerId = req.user._id;
-        const blockedId = req.params.userId;
+  try {
+    const blockerId = req.user._id;
+    const blockedId = req.params.userId;
 
-        const unblock = await Profile.findOneAndUpdate(
-            {
-                user : blockerId
-            },
-            {
-                $pull : { blockList : blockedId}
-            }
-        );
+    await Profile.findOneAndUpdate(
+      { user: blockerId },
+      { $pull: { blockList: blockedId } }
+    );
 
-        await unblock.save();
-        return res.json({ message: "User Unblocked successfully." });
-    } catch (error) {
-        return res.status(500).json({message : "Internal Server Error"});
-    }
-}
+    res.json({ message: "User unblocked successfully." });
+
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
 
 export const availability = async (req, res) => {
-    try {
-        const {available} = req.body;
-        const userId = req.user.id;
+  try {
+    const { available } = req.body;
+    const userId = req.user._id;
 
-        const updateProfile = await Profile.findOneAndUpdate({user : userId}, {isAvailableForCollab : available}, {new : true});
+    const updated = await Profile.findOneAndUpdate(
+      { user: userId },
+      { isAvailableForCollab: available },
+      { new: true }
+    );
 
-        await updateProfile.save();
-        return res.status(200).json(updateProfile);
-    } catch (error) {
-        return res.status(500).json({message : "Internal Server Error"});
-    }
-}
+    res.status(200).json({
+      isAvailableForCollab: updated.isAvailableForCollab,
+      profile: updated
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+
+
+export const deleteProfile = async (req, res) => {
+  try {
+    const userId = req.user._id;
+
+    const deleted = await Profile.findOneAndDelete({ user: userId });
+
+    if (!deleted) return res.status(400).json({ message: "Profile deletion failed" });
+
+    res.status(200).json({ message: "Profile deleted successfully" });
+
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

@@ -1,38 +1,79 @@
 import mongoose from "mongoose";
 
-const ProjectSchema = new mongoose.Schema({
-    adminId : {
-        type : mongoose.Schema.Types.ObjectId,
-        ref : "User",
-        required : true
+const projectSchema = new mongoose.Schema(
+  {
+    title: {
+      type: String,
+      required: true,
+      trim: true,
     },
 
-    title : {
-        type : String,
-        required : true
+    description: {
+      type: String,
+      required: true,
     },
 
-    description : {
-        type : String,
+    image: {
+      type: String, 
+      default: "", 
     },
 
-    projectImage : {
-        type : String,
+    adminId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
     },
 
-    members : [{
-        type : String,
-    }],
-
-    skillsRequired : [{
-        type : String
-    }],
-
-    isCompleted : {
-        type : Boolean
+    skills: {
+      type: [String],
+      default: [],
     },
 
-}, {timestamps : true});
+    team: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        name: {
+          type: String,
+        },
+        role: {
+          type: String,
+          default: "member",
+        },
+        joinedAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
 
-const Project = mongoose.model("Project", ProjectSchema);
+    requests: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        
+        name: String,
+
+        requestedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        status: {
+          type: String,
+          enum: ["pending", "approved", "rejected"],
+          default: "pending",
+        },
+      },
+    ],
+  },
+
+  { timestamps: true }
+);
+
+const Project = mongoose.model("Project", projectSchema);
+
 export default Project;

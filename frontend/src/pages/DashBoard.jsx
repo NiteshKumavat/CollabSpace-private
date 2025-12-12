@@ -1,14 +1,23 @@
-
 import Header from '../components/Header.jsx'
 import Footer from '../components/Footer.jsx'
 import ProjectBox from '../components/ProjectBox.jsx'
 import { FaSearch } from "react-icons/fa";
 import ProjectDescription from '../components/ProjectDescription.jsx';
 
-import { useState } from 'react';
+import { useProjectStore } from "../store/useProjectStore.js";
+
+import { useState, useEffect } from 'react';
 
 function DashBoard() {
     const [open, setOpen] = useState(false)
+    const [selectedProject, setSelectedProject] = useState({});
+    const { projects, fetchAllProjects, loading } = useProjectStore();
+    const [mode, setMode] = useState("view")
+
+    useEffect(() => {
+        fetchAllProjects()
+    }, [fetchAllProjects])
+
   return (
   	<div >
         <Header />
@@ -52,17 +61,34 @@ function DashBoard() {
                 />
             </div>
 
-            <div className='grid grid-cols-[repeat(auto-fill,300px)] gap-5 mt-5 middle'>
-                <ProjectBox onStart={() => setOpen(true)}/>
-                <ProjectBox onStart={() => setOpen(true)}/>
-                <ProjectBox onStart={() => setOpen(true)}/>
+            <div className="grid grid-cols-[repeat(auto-fill,300px)] gap-5 mt-5 middle">
+                {loading && <p className="text-white text-lg">Loading projects...</p>}
 
-                {open && <ProjectDescription onClose={() => setOpen(false)}/>}
+                {!loading && projects?.length === 0 && (
+                    <p className="text-gray-300">No projects found.</p>
+                )}
+
+                {!loading && projects?.map((project) => (
+                    <div key={project._id}>
+                        <ProjectBox 
+                            key={project._id} 
+                            project={project} 
+                            onStart={() => {
+                                setOpen(true)
+                                setSelectedProject(project)
+                            }}
+                            
+                        />
+                        
+                    </div>
+                ))}
+
+
+
             </div>
-
-
+            
         </div>
-
+        {open && <ProjectDescription onClose={() => {setOpen(false); setSelectedProject({})}} project={selectedProject} mode={mode} userRole={"viewer"} setMode={setMode}/>}
         <Footer />
     </div>
   )

@@ -1,6 +1,18 @@
-import React from 'react'
+import React, {useState} from 'react'
+import { useAuthStore } from '../store/useAuthStore'
+import { LoaderIcon } from 'lucide-react';
 
-function register() {
+function Register() {
+
+    const [form, setFormData] = useState({fullName : "", email : "", password : ""});
+    const {signup, isSigningUp} = useAuthStore();
+
+    const handler = (e) => {
+        e.preventDefault();
+        signup(form)
+    }
+    
+
     return (
         <div className="w-full h-screen flex items-center justify-center ">
             <div className="bg-[#301F56] rounded-lg w-[1200px] h-[700px] grid grid-cols-2 border border-gray-500 container">
@@ -9,15 +21,20 @@ function register() {
                         <img className="mt-6" src="logo-removebg-preview.png" alt="logo" width={150} />
         
                         <h1 className="text-white text-3xl font-extrabold mb-12">Join CollabSpace</h1>
-                        <form className="w-full flex flex-col">
+                        <form className="w-full flex flex-col" onSubmit={handler}>
                             <label htmlFor="fullName" className="ml-2 text-white font-semibold text-l">Full Name : </label>
-                            <input type="fullName" id="fullName" className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black mb-5" required/>
+                            <input type="fullName" id="fullName" className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black mb-5" value={form.fullName} onChange={(e) => setFormData({...form, fullName : e.target.value})} required/>
                             <label htmlFor="email" className="ml-2 text-white font-semibold text-l">Email : </label>
-                            <input type="email" id="email" className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black mb-5" required/>
+                            <input type="email" id="email" className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black mb-5" value={form.email} onChange={(e) => setFormData({ ...form , email : e.target.value})} required/>
                             <label htmlFor="password" className='ml-2 text-white font-semibold text-l'>Password : </label>
-                            <input type="password" id="password" className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black mb-5" required/>
-                            <button type="submit" className="mt-4 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition">
-                                Sign Up
+                            <input type="password" id="password" className="px-4 py-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 text-black mb-5" value={form.password} onChange={(e) => setFormData({ ...form , password : e.target.value})} required/>
+                            <button type="submit" className="mt-4 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition" disabled={isSigningUp}>
+                                {isSigningUp ? (
+                                    <LoaderIcon className="w-full h-5 animate-spin text-center" />
+                                ):(
+                                    "Sign Up"
+                                )}
+                                
                             </button> 
                         </form>
 
@@ -36,4 +53,4 @@ function register() {
     )
 }
 
-export default register
+export default Register
