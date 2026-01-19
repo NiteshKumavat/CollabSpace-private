@@ -8,6 +8,7 @@ import {
   deleteProject,
   requestToJoin,
   acceptRequest,
+  generateProjectAI,
   rejectRequest,
 } from "../controllers/project.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
@@ -30,7 +31,7 @@ router.put("/:projectId/request", protectRoute, requestToJoin);
 
 router.put("/:projectId/request/:requestUserId/accept", protectRoute, acceptRequest);
 
-
+router.post("/generate-ai", protectRoute, generateProjectAI);
 router.put("/:projectId/request/:requestUserId/reject", protectRoute, rejectRequest);
 
 

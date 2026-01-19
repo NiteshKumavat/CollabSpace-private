@@ -1,7 +1,7 @@
 import Profile from "../models/Profile.js";
 import Project from "../models/Project.js";
 import cloudinary from "../lib/cloudinary.js";
-
+import Groq from "groq-sdk";
 
 export const getAllProjects = async (req, res) => {
   try {
@@ -24,14 +24,13 @@ export const getAllProjects = async (req, res) => {
     }).populate("adminId", "fullName userName profilePicture");
 
 
-    const filteredProjects = projects.filter(project => 
+    const filteredProjects = projects.filter(project =>
       project.adminId._id.toString() !== viewerId.toString()
     );
 
     return res.status(200).json({ filteredProjects });
 
   } catch (error) {
-    console.log(error);
     return res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -56,7 +55,7 @@ export const createProject = async (req, res) => {
     const { title, description, skills } = req.body;
     const adminId = req.user._id;
 
-    if (!title) return res.status(400).json({ message: "Title is required" });
+    if (!title || !description) return res.status(400).json({ message: "Title and Description are required" });
 
     let imageUrl = null;
     if (req.body.image) {
@@ -69,7 +68,7 @@ export const createProject = async (req, res) => {
       title,
       description,
       skills,
-      projectImage: imageUrl,
+      image: imageUrl,
       team: [{ userId: adminId, name: req.user.fullName }],
     });
 
@@ -108,7 +107,7 @@ export const updateProject = async (req, res) => {
   }
 };
 
-export const leaveProject = async(req, res) => {
+export const leaveProject = async (req, res) => {
   try {
     const projectId = req.params.projectId;
     const userId = req.user._id;
@@ -116,13 +115,15 @@ export const leaveProject = async(req, res) => {
     const project = await Project.findById(projectId);
 
     if (!project) return res.status(404).json({ message: "Project not found" });
-
+    if (project.adminId.toString() === userId.toString()) {
+      return res.status(400).json({ message: "Admin cannot leave the project. Delete it instead." });
+    }
     project.team = project.team.filter(member => member.userId.toString() !== userId.toString());
 
     await project.save();
 
     return res.status(200).json({ message: "Left the project successfully" });
-    
+
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
   }
@@ -142,7 +143,7 @@ export const deleteProject = async (req, res) => {
       return res.status(403).json({ message: "You are not allowed to delete this project" });
 
     await project.deleteOne();
-
+    await Message.deleteMany({ teamId: projectId });
     return res.status(200).json({ message: "Project deleted successfully" });
 
   } catch (error) {
@@ -153,14 +154,13 @@ export const deleteProject = async (req, res) => {
 
 
 export const requestToJoin = async (req, res) => {
-  console.log("Hello");
   try {
     const projectId = req.params.projectId;
-    console.log("Project ID:", projectId);
     const userId = req.user._id;
 
     const project = await Project.findById(projectId);
-    console.log("Project:", project);
+
+
     if (!project) return res.status(404).json({ message: "Project not found" });
 
     const alreadyMember = project.team.some(member => member.userId.toString() === userId.toString());
@@ -234,5 +234,42 @@ export const rejectRequest = async (req, res) => {
 
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const generateProjectAI = async (req, res) => {
+  try {
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+    const { title } = req.body;
+
+    if (!title) {
+      return res.status(400).json({ message: "Project title is required" });
+    }
+
+    const prompt = `
+      Act as a Senior CTO. I am building a project titled: "${title}".
+      1. Write a professional, concise description (max 2 sentences) explaining what this project does.
+      2. List the 4 most important technologies (Skills) needed to build it (e.g., React, Node.js, Python).
+      
+      Return ONLY valid JSON in this format:
+      {
+        "description": "string",
+        "skills": ["string", "string"]
+      }
+    `;
+
+    const chatCompletion = await groq.chat.completions.create({
+      messages: [{ role: "user", content: prompt }],
+      model: "llama3-8b-8192", // Fast and Free
+      response_format: { type: "json_object" }, // Enforce JSON
+    });
+
+    const aiResponse = JSON.parse(chatCompletion.choices[0].message.content);
+
+    return res.status(200).json(aiResponse);
+
+  } catch (error) {
+    console.error("AI Generation Error:", error);
+    return res.status(500).json({ message: "Failed to generate AI content" });
   }
 };

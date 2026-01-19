@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
-import Header from "../components/Header";
+// REMOVED: import Header from "../components/Header";  <-- Caused the double header
 import ProfileHeader from "../components/ProfileHeader";
 import ProfileInfo from "../components/ProfileInfo";
 import ProfileLinks from "../components/ProfileLinks";
@@ -26,8 +26,6 @@ export default function Profile() {
     const { fetchUserProjects, userProjects, createProject } = useProjectStore(); 
 
     const isOwner = authUser?._id === id;
-
-
 
     // ---------- LOCAL STATE ----------
     const [info, setInfo] = useState({
@@ -92,12 +90,14 @@ export default function Profile() {
     };
 
     return (
-        <div className="w-full">
+        <div className="min-h-screen w-full pb-20"> {/* Added pb-20 for footer space */}
             <Toaster />
-            <Header />
-
-            <div className="w-[80%] mx-auto mt-10 px-4">
-                <div className="bg-white/10 backdrop-blur-md p-8 rounded-2xl shadow-xl">
+           
+            {/* Added pt-24 to prevent overlap with the Fixed Header */}
+            <div className="w-[90%] md:w-[80%] mx-auto pt-24 px-4">
+                
+                {/* Glassmorphism Card */}
+                <div className="glass-card p-8 rounded-2xl"> {/* Removed explicit bg-white/10, used glass-card class */}
 
                     {/* HEADER */}
                     <ProfileHeader
@@ -110,6 +110,7 @@ export default function Profile() {
                         setSelectedImage={setSelectedImage}
                     />
 
+                    {/* Components (Inputs need fixing in their own files) */}
                     <ProfileInfo
                         editMode={editMode}
                         info={info}
@@ -122,7 +123,6 @@ export default function Profile() {
                         updateLink={updateLink}
                     />
 
-                    {/* Fixed: Pass projects data and onCreate handler */}
                     {isOwner && (
                         <ProfileProjects 
                             projects={userProjects} 
@@ -136,7 +136,6 @@ export default function Profile() {
                     <ProfileActions isOwner={isOwner} profileId={id} />
                 </div>
             </div>
-
 
             {showCreateProject && (
                 <ProjectDescription

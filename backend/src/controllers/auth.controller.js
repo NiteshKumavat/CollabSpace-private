@@ -1,109 +1,195 @@
 import { generateToken } from "../lib/utils.js"
 import bcrypt from "bcryptjs";
+import crypto from "crypto";
+import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import Profile from "../models/Profile.js";
 
 
-export const login = async(req, res) => {
-    
-    try {
-		const {email, password} = req.body;
-		
+export const login = async (req, res) => {
 
-        const newUser = await User.findOne({email});
-		console.log(newUser);
-		
-        if(!newUser) return res.status(400).json({message : "Invalid Credentials"});
-
-        const isPasswordCorrect = await bcrypt.compare(password, newUser.password);
-        if(!isPasswordCorrect) return res.status(400).json({message : "Invalid Credentials"});
-
-        generateToken(newUser._id, res);
-
-        res.status(201).json({
-            _id : newUser._id,
-            fullName : newUser.fullName,
-            email : newUser.email,
-        });
-    } catch (error) {
-        res.status(500).json({message : "Internal Server Error"})
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
     }
+
+    const newUser = await User.findOne({ email });
+
+    if (!newUser) return res.status(400).json({ message: "Invalid Credentials" });
+
+    const isPasswordCorrect = await bcrypt.compare(password, newUser.password);
+    if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid Credentials" });
+
+    generateToken(newUser._id, res);
+
+    const profile = await Profile.findOne({ user: newUser._id });
+
+    res.status(200).json({
+      _id: newUser._id,
+      fullName: newUser.fullName,
+      email: newUser.email,
+      profilePicture: profile?.profilePicture || "",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" })
+  }
 }
 
 
 export const register = async (req, res) => {
-    const {fullName, email, password} = req.body;
-	try{
-		
-		if(!fullName || !email || !password) {
-			return res.status(400).json({message: "All fields are required"});
-		}
+  const { fullName, email, password } = req.body;
+  try {
 
-		if(password.length < 6){
-			return res.status(400).json({message: "Password must be at least 6 characters"});
-		}
+    if (!fullName || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-		if(!emailRegex.test(email)){
-			return res.status(400).json({message: "Invalid email format"});
-		}
+    if (password.length < 6) {
+      return res.status(400).json({ message: "Password must be at least 6 characters" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
 
 
-		const user = await User.findOne({email});
-		if (user) return res.status(400).json({message : "User already exists in database"})
+    const user = await User.findOne({ email });
+    if (user) return res.status(400).json({ message: "User already exists in database" })
 
-		const salt = await bcrypt.genSalt(10);
-		const hashedPassword = await bcrypt.hash(password, salt);
+    const newUser = new User({
+      fullName,
+      email,
+      password
+    });
 
-		const newUser = new User ({
-			fullName,
-			email,
-			password : hashedPassword
-		});
 
-		
 
-		if(newUser){
-			
-			await newUser.save();
-			const newProfile = new Profile({
-				user : newUser._id,
-				fullName,
-				email,
-			});
+    if (newUser) {
 
-			await newProfile.save();
+      await newUser.save();
+      const newProfile = new Profile({
+        user: newUser._id,
+        fullName,
+        email,
+      });
 
-			generateToken(newUser._id, res);
-			res.status(201).json({
-				_id : newUser._id,
-				fullName : newUser.fullName,
-				email : newUser.email,
-				isNewUser : true
-			});
-		}
-		else{
-			res.status(400).json({message : "Error creating user"});
-		}
-	}catch(error){
-		console.log(error);
-		res.status(500).json({message : "INTERNAL SERVER ERROR"})
-	}
+      await newProfile.save();
+
+      generateToken(newUser._id, res);
+      res.status(201).json({
+        _id: newUser._id,
+        fullName: newUser.fullName,
+        email: newUser.email,
+        profilePicture: "",
+        isNewUser: true
+      });
+    }
+    else {
+      res.status(400).json({ message: "Error creating user" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" })
+  }
 }
 
 export const logout = async (req, res) => {
-    res.cookie("jwt", "", {maxAge : 0});
-    res.status(200).json({message : "Logged Out Successfully"})
+  res.cookie("jwt", "", { maxAge: 0 });
+  res.status(200).json({ message: "Logged Out Successfully" })
 }
 
 export const deleteUser = async (req, res) => {
-	try {
-		const user = req.user;
+  try {
+    const user = req.user;
 
-		await User.findByIdAndDelete(user._id);
-		res.status(200).json({message : "User deleted successfully"});
-	} catch(error){
-		console.log(error);
-		res.status(500).json({message : "INTERNAL SERVER ERROR"})
-	}
+    await User.findByIdAndDelete(user._id);
+    res.status(200).json({ message: "User deleted successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "INTERNAL SERVER ERROR" })
+  }
 }
+export const forgotPassword = async (req, res) => {
+  const { email } = req.body;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Generate Token
+    const token = crypto.randomBytes(20).toString("hex");
+
+    // Save token to DB (valid for 1 hour)
+    user.resetPasswordToken = token;
+    user.resetPasswordExpires = Date.now() + 3600000;
+    await user.save();
+
+    // Send Email (Using Gmail for dev - Google "Gmail App Password" to get a password)
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.EMAIL_USER, // Your Gmail
+        pass: process.env.EMAIL_PASS, // Your App Password
+      },
+    });
+
+    const mailOptions = {
+      to: user.email,
+      from: 'CollabSpace Support',
+      subject: 'Password Reset',
+      text: `You are receiving this because you (or someone else) have requested the reset of the password for your account.\n\n` +
+        `Please click on the following link, or paste this into your browser to complete the process:\n\n` +
+        `http://localhost:5173/reset-password/${token}\n\n` +
+        `If you did not request this, please ignore this email.\n`,
+    };
+
+    await transporter.sendMail(mailOptions);
+    res.status(200).json({ message: "Email sent" });
+
+  } catch (error) {
+    res.status(500).json({ message: "Error sending email" });
+  }
+};
+
+// 2. RESET PASSWORD (Verify Token & Change Password)
+export const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetPasswordToken: token,
+      resetPasswordExpires: { $gt: Date.now() }, // Check if not expired
+    });
+
+    if (!user) return res.status(400).json({ message: "Password reset token is invalid or has expired." });
+
+    // Hash new password using your existing bcrypt logic (Assuming you have a pre-save hook or manual hashing)
+    // If you use bcrypt manually here: const salt = await bcrypt.genSalt(10); user.password = await bcrypt.hash(password, salt);
+    user.password = password; // Make sure your User model has a .pre('save') hook to hash this!
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.status(200).json({ message: "Password updated!" });
+
+  } catch (error) {
+    res.status(500).json({ message: "Error resetting password" });
+  }
+};
+
+export const checkAuth = async (req, res) => {
+  try {
+    const user = req.user;
+    const profile = await Profile.findOne({ user: user._id });
+
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePicture: profile?.profilePicture || "",
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
