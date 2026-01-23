@@ -1,22 +1,22 @@
 import { create } from "zustand";
-import {axiosInstance} from "../lib/axios.js";
+import { axiosInstance } from "../lib/axios.js";
 import toast from "react-hot-toast";
 
 export const useProfileStore = create((set) => ({
-    allusers : [],
+    allusers: [],
     profile: null,
-    newProfile : null,
+    newProfile: null,
     requests: null,
     loading: false,
     error: null,
 
 
-    getUsers : async () => {
+    getUsers: async () => {
         try {
-            set ({ loading: true });
+            set({ loading: true });
 
-            const res = await axiosInstance.get(`profile/users`, { withCredentials: true });
-            set ({ allusers: res.data.profiles, loading: false });
+            const res = await axiosInstance.get(`/profile/users`, { withCredentials: true });
+            set({ allusers: res.data.profiles, loading: false });
 
 
         } catch (error) {
@@ -85,12 +85,12 @@ export const useProfileStore = create((set) => ({
 
     blockUser: async (userId) => {
         try {
-            await axiosInstance.post(`/profile/block/${userId}`, {}, { withCredentials: true });
+            await axiosInstance.put(`/profile/block/${userId}`, {}, { withCredentials: true });
 
             set((state) => ({
                 profile: {
-                ...state.profile,
-                blockList: [...(state.profile?.blockList || []), userId],
+                    ...state.profile,
+                    blockList: [...(state.profile?.blockList || []), userId],
                 },
             }));
 
@@ -106,12 +106,12 @@ export const useProfileStore = create((set) => ({
 
     unblockUser: async (userId) => {
         try {
-            await axiosInstance.post(`/profile/unblock/${userId}`, {}, { withCredentials: true });
+            await axiosInstance.put(`/profile/unblock/${userId}`, {}, { withCredentials: true });
 
             set((state) => ({
                 profile: {
-                ...state.profile,
-                blockList: state.profile?.blockList.filter((id) => id !== userId),
+                    ...state.profile,
+                    blockList: state.profile?.blockList.filter((id) => id !== userId),
                 },
             }));
 
@@ -127,7 +127,7 @@ export const useProfileStore = create((set) => ({
 
     toggleAvailability: async (available) => {
         try {
-            const res = await axiosInstance.post(
+            const res = await axiosInstance.put(
                 `/profile/availability`,
                 { available },
                 { withCredentials: true }

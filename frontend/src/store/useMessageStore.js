@@ -1,17 +1,16 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import { useAuthStore } from "./useAuthStore"; // Import auth store to access socket
 
 export const useMessageStore = create((set, get) => ({
 
     messages: [],
-    projects:[],
+    projects: [],
     loading: false,
     error: null,
-    page: 1,
-    limit: 20,
-    hasMore: true,
-
+    // (Removed pagination complexity for now to ensure Socket works first)
+    
     // ============================
     // Helpers
     // ============================
@@ -19,17 +18,16 @@ export const useMessageStore = create((set, get) => ({
     stopLoading: () => set({ loading: false }),
     setError: (msg) => set({ error: msg }),
 
-
     getMyProjects: async () => {
         set({ loading: true });
-
         try {
-            const res = await axiosInstance.get("/message/teams", {
-                withCredentials: true,
-            });
+            // 🛑 OLD/WRONG: 
+            // const res = await axiosInstance.get("/api/project/my-projects");
 
-            set({ projects: res.data.data });
-
+            // ✅ NEW/CORRECT: (Matches your backend route)
+            const res = await axiosInstance.get("/message/teams");
+            
+            set({ projects: res.data.data }); 
         } catch (err) {
             console.log(err);
             toast.error("Unable to load your teams");
@@ -38,127 +36,86 @@ export const useMessageStore = create((set, get) => ({
         }
     },
 
-    // ============================
-    // Fetch Paginated Messages
-    // ============================
-    fetchMessages: async (teamId, reset = false) => {
-        const { page, limit, startLoading, stopLoading, setError } = get();
-
+    fetchMessages: async (projectId) => {
+        set({ loading: true });
         try {
-            if (reset) {
-                set({ messages: [], page: 1, hasMore: true });
-            }
+            // 🛑 OLD/WRONG: 
+            // const res = await axiosInstance.get(`/messages/${projectId}`);
 
-            startLoading();
-
-            const currentPage = reset ? 1 : page;
-
-            const res = await axiosInstance.get(
-                `/message/teams/${teamId}?page=${currentPage}&limit=${limit}`,
-                { withCredentials: true }
-            );
-
-            const newMessages = res.data.data || [];
-
-            // Combine → Remove duplicates → Sort
-            const merged = [...newMessages, ...get().messages]
-                .filter((v, i, arr) => arr.findIndex(m => m._id === v._id) === i);
-
-            set({
-                messages: merged,
-                page: currentPage + 1,
-                hasMore: res.data.hasMore,
-            });
-
+            // ✅ NEW/CORRECT: (Must match backend route '/teams/:teamId')
+            const res = await axiosInstance.get(`/message/teams/${projectId}`);
+            
+            // Note: Your backend returns { data: [...] }, so we use res.data.data
+            set({ messages: res.data.data }); 
         } catch (err) {
-            const msg = err.response?.data?.message || "Failed to load messages";
-            setError(msg);
-            toast.error(msg);
+            console.log(err);
+            // toast.error("Failed to load messages"); // Optional
         } finally {
-            stopLoading();
+            set({ loading: false });
         }
     },
 
-    // ============================
-    // Send Message
-    // ============================
     sendMessage: async ({ teamId, message, image }) => {
+        const { messages } = get(); // Get current messages
         try {
-            console.log("Sending message:", { teamId, message, image });
+            // 1. Send to Backend
             const res = await axiosInstance.post(
                 `/message`,
                 { teamId, message, image },
                 { withCredentials: true }
             );
 
-            const newMsg = res.data.data;
-
-            // Prevent duplicate entries
-            if (get().messages.some(m => m._id === newMsg._id)) return;
-
-            set({ messages: [...get().messages, newMsg] });
+            // 2. FORCE UPDATE THE UI IMMEDIATELY
+            const newMessage = res.data.data;
+            
+            // Check if it's already there (to avoid duplicates from socket)
+            const isDuplicate = messages.some(m => m._id === newMessage._id);
+            
+            if (!isDuplicate) {
+                set({ messages: [...messages, newMessage] });
+            }
 
         } catch (err) {
+            console.error(err);
             toast.error(err.response?.data?.message || "Failed to send message");
         }
     },
 
     // ============================
-    // Update Message
+    // SOCKET Live Updates
     // ============================
-    updateMessage: async (messageId, newText) => {
-        try {
-            const res = await axiosInstance.put(
-                `/message/${messageId}`,
-                { message: newText },
-                { withCredentials: true }
-            );
+     subscribeToMessages: (projectId) => {
+        const socket = useAuthStore.getState().socket;
+        if (!socket) return;
 
-            const updated = res.data.data;
+        console.log("📡 Subscribing to Room:", projectId);
+        
+        // 1. Join the Room
+        socket.emit("joinProject", projectId);
 
-            set({
-                messages: get().messages.map((msg) =>
-                    msg._id === messageId ? updated : msg
-                ),
-            });
+        // 2. Listen for New Messages
+        socket.on("newMessage", (newMessage) => {
+            console.log("⚡ Real-time message received:", newMessage);
+            
+            // 🐛 FIX: Check both 'teamId' and 'projectId' to be safe
+            const messageRoomId = newMessage.teamId || newMessage.projectId;
 
-            toast.success("Message updated");
+            // Only add if it belongs to the currently open chat
+            if (messageRoomId !== projectId) {
+                console.log("⚠️ Message ignored (Wrong Room):", messageRoomId);
+                return;
+            }
 
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to update message");
-        }
+            // Update State
+            set({ messages: [...get().messages, newMessage] });
+        });
     },
 
-    // ============================
-    // Delete Message
-    // ============================
-    deleteMessage: async (messageId) => {
-        try {
-            await axiosInstance.delete(`/message/${messageId}`, {
-                withCredentials: true,
-            });
-
-            set({
-                messages: get().messages.filter((msg) => msg._id !== messageId),
-            });
-
-            toast.success("Message deleted");
-
-        } catch (err) {
-            toast.error(err.response?.data?.message || "Failed to delete message");
-        }
+    unsubscribeFromMessages: () => {
+        const socket = useAuthStore.getState().socket;
+        if (!socket) return;
+        
+        console.log("🔕 Unsubscribing");
+        socket.off("newMessage");
     },
-
-    // ============================
-    // SOCKET Live Updates (Future Ready)
-    // ============================
-    addIncomingMessage: (msg) => {
-        if (!msg) return;
-
-        // Avoid duplicates
-        if (get().messages.some((m) => m._id === msg._id)) return;
-
-        set({ messages: [...get().messages, msg] });
-    },
-
-}));
+}));    

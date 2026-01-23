@@ -1,77 +1,53 @@
 import TeamSidebar from "../components/TeamSidebar.jsx";
-import MemberSidebar from "../components/MemberSidebar.jsx";
 import ChatWindow from "../components/ChatWindow.jsx";
-import { useMessageStore } from "../store/useMessageStore.js";
+import { useMessageStore } from "../store/useMessageStore.js"; 
 import { useState, useEffect } from "react";
-import Header from "../components/Header.jsx"
-import Footer from "../components/Footer.jsx"
 
 export default function Chat() {
-
-  const [side, setSide] = useState("Teams")
-  const [selectedTab, setSelectedTab] = useState("Teams");
-  const {projects , getMyProjects} = useMessageStore();
+  // 1. Get 'projects' from MessageStore (This includes teams you JOINED)
+  const { projects, getMyProjects, loading } = useMessageStore(); 
   const [selectedProject, setSelectedProject] = useState(null);
-  
 
+  // 2. Fetch the teams
   useEffect(() => {
     getMyProjects();
-  }, [getMyProjects])
+  }, [getMyProjects]);
 
   return (
-    <div>
-        <Header />
-        <div className="relative bg-[#0B1630] text-white flex m-5 rounded-2xl p-[3px]">
-            {/* Animated shiny border */}
-            <div className="absolute inset-0 [background:linear-gradient(45deg,#172033,theme(colors.slate.800)_50%,#172033)_padding-box,conic-gradient(from_var(--border-angle),theme(colors.slate.600/.48)_80%,_theme(colors.cyan.500)_86%,_theme(colors.cyan.300)_90%,_theme(colors.cyan.500)_94%,_theme(colors.slate.600/.48))_border-box] rounded-2xl border border-transparent animate-border flex overflow-hidden"></div>
+    <div className="h-screen w-full bg-[#0B0C15] flex items-center justify-center pt-20 pb-5 px-5">
+        
+        <div className="w-full h-full max-w-7xl bg-[#151725] rounded-2xl border border-white/10 flex overflow-hidden shadow-2xl relative">
             
-            {/* Main content container */}
-            <div className="relative w-full bg-[#0B1630] rounded-2xl flex z-10">
-
-
-                <div className="w-1/3 border-r border-white/10 p-5">
-                    <h2 className="text-xl font-semibold mb-4">{side === "Teams" ? "All Teams" : "Team Members"}</h2>
-
-
-                    <div className="flex gap-2 mb-4">
-                        <button
-                            onClick={() => {setSelectedTab("members"); setSide("member")}}
-                            className={`px-4 py-2 rounded-lg ${
-                                selectedTab === "members"
-                                ? "bg-blue-600"
-                                : "bg-white/10"
-                            }`}
-                        >
-                            Members
-                        </button>
-                        <button
-                            onClick={() => {setSelectedTab("Teams"); setSide("Teams")}}
-                            className={`px-4 py-2 rounded-lg ${
-                                selectedTab === "Teams"
-                                ? "bg-blue-600"
-                                : "bg-white/10"
-                            }`}
-                        >
-                            All Teams
-                        </button>
-                    </div>
-                    {side === "Teams" ? (
-                        <TeamSidebar projects={projects} setSelectedProject={setSelectedProject}/>
-                    ) : (
-                        <MemberSidebar project={selectedProject} />
-                    )}
-
+            {/* Left Sidebar */}
+            <div className="w-80 border-r border-white/10 flex flex-col bg-[#0B0C15]/50">
+                <div className="p-5 border-b border-white/10">
+                    <h2 className="text-xl font-bold text-white">My Teams</h2>
+                    <p className="text-xs text-gray-500 mt-1">Select a team to chat</p>
                 </div>
-
-
-
-
-                <div className="flex-1">
-                    <ChatWindow project={selectedProject}/>
-                </div>
+                
+                {/* 3. PASS 'projects', NOT 'userProjects' */}
+                <TeamSidebar 
+                    projects={projects} 
+                    setSelectedProject={setSelectedProject}
+                />
             </div>
+
+            {/* Right Chat Window */}
+            <div className="flex-1 flex flex-col relative">
+                {selectedProject ? (
+                    <ChatWindow project={selectedProject} />
+                ) : (
+                    <div className="flex-1 flex flex-col items-center justify-center text-center p-10 opacity-50">
+                        <div className="w-20 h-20 bg-white/5 rounded-full flex items-center justify-center mb-5">
+                             <span className="text-4xl">💬</span>
+                        </div>
+                        <h3 className="text-2xl font-bold text-gray-300">No Chat Selected</h3>
+                        <p className="text-gray-500 mt-2">Choose a project from the sidebar to start collaborating.</p>
+                    </div>
+                )}
+            </div>
+
         </div>
-        <Footer />
     </div>
   );
 }

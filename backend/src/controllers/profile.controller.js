@@ -46,7 +46,7 @@ export const getProfile = async (req, res) => {
 
 
 export const updateProfile = async (req, res) => {
-  
+
   try {
     const userId = req.user._id;
     const updates = req.body;
@@ -63,11 +63,9 @@ export const updateProfile = async (req, res) => {
       { new: true }
     );
 
-    console.log(updated);
     res.status(200).json(updated);
 
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -129,7 +127,6 @@ export const availability = async (req, res) => {
     });
 
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

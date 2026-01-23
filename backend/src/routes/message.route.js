@@ -2,29 +2,26 @@ import express from "express";
 import { 
     sendMessage, 
     getTeamMessages, 
+    getUserTeams, 
     updateMessage, 
-    deleteMessage ,
-    getUserTeams
+    deleteMessage 
 } from "../controllers/message.controller.js";
 
 import { protectRoute } from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
+// Matches frontend: axios.get("/message/teams")
 router.get("/teams", protectRoute, getUserTeams);
 
-// Get paginated messages
+// Matches frontend: axios.get("/message/teams/:teamId")
 router.get("/teams/:teamId", protectRoute, getTeamMessages);
 
-
-
-// Send message
+// Matches frontend: axios.post("/message")
 router.post("/", protectRoute, sendMessage);
 
-// Update a message
+// Update/Delete placeholders
 router.put("/:messageId", protectRoute, updateMessage);
-
-// Delete a message
 router.delete("/:messageId", protectRoute, deleteMessage);
 
 export default router;

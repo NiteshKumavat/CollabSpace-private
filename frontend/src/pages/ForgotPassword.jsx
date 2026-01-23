@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore.js";
-import { Toaster } from "react-hot-toast"; // Ensure this is imported
+import { Toaster } from "react-hot-toast";
 
 // Page Imports
 import Register from "./pages/Register.jsx";
@@ -11,7 +11,7 @@ import LandingPage from "./pages/LandingPage.jsx";
 import Profile from "./pages/Profile.jsx";
 import Developers from "./pages/Developers.jsx";
 import Chat from "./pages/Chat.jsx";
-import ForgotPassword from "./pages/ForgotPassword.jsx";
+import ForgotPassword from "./pages/ForgotPassword.jsx"; // 👈 1. IMPORT THIS
 
 // Component Imports
 import PageLoader from "./components/PageLoader.jsx";
@@ -28,28 +28,16 @@ export default function App() {
 
   if (isCheckingAuth) return <PageLoader />;
 
+  // Hide Footer on these specific routes
   const hideFooterRoutes = ["/chats", "/login", "/register", "/", "/forgot-password"];
   const showFooter = !hideFooterRoutes.includes(location.pathname) || (location.pathname === "/" && authUser);
+
+  // Hide Header logic
   const showHeader = authUser && !["/login", "/register", "/forgot-password"].includes(location.pathname);
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#0B0C15]">
-
-      {/* 👇 FIXED TOASTER CONFIGURATION */}
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
-        toastOptions={{
-          // Force high Z-Index so it shows above Modals and Glass Cards
-          style: {
-            zIndex: 9999,
-            background: '#333',
-            color: '#fff',
-          },
-          // Custom class for Tailwind override if needed
-          className: 'z-[9999]',
-        }}
-      />
+      <Toaster />
 
       {showHeader && <Header />}
 
@@ -59,9 +47,13 @@ export default function App() {
             path="/"
             element={authUser ? <DashBoard /> : <LandingPage />}
           />
+
           <Route path="/login" element={!authUser ? <Login /> : <Navigate to="/" />} />
           <Route path="/register" element={!authUser ? <Register /> : <Navigate to="/" />} />
+
+          {/* 👇 2. ADD THIS ROUTE */}
           <Route path="/forgot-password" element={<ForgotPassword />} />
+
           <Route path="/profile/:id" element={authUser ? <Profile /> : <Navigate to="/login" />} />
           <Route path="/developers" element={authUser ? <Developers /> : <Navigate to="/login" />} />
           <Route path="/chats" element={authUser ? <Chat /> : <Navigate to="/login" />} />
