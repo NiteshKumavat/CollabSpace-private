@@ -10,7 +10,6 @@ function DashBoard() {
     const { projects, fetchAllProjects, loading, error } = useProjectStore();
     const [mode, setMode] = useState("view");
 
-    // Ref for scrolling
     const projectsRef = useRef(null);
 
     useEffect(() => {

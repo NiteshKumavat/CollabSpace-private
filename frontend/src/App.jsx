@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { Route, Routes, Navigate, useLocation } from "react-router-dom";
 import { useAuthStore } from "./store/useAuthStore.js";
-import { Toaster } from "react-hot-toast"; // Ensure this is imported
+import { Toaster } from "react-hot-toast"; 
 
 // Page Imports
 import Register from "./pages/Register.jsx";
@@ -12,6 +12,7 @@ import Profile from "./pages/Profile.jsx";
 import Developers from "./pages/Developers.jsx";
 import Chat from "./pages/Chat.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
+import FileExplorer from "./pages/FileExplorer.jsx";
 
 // Component Imports
 import PageLoader from "./components/PageLoader.jsx";
@@ -65,6 +66,7 @@ export default function App() {
           <Route path="/profile/:id" element={authUser ? <Profile /> : <Navigate to="/login" />} />
           <Route path="/developers" element={authUser ? <Developers /> : <Navigate to="/login" />} />
           <Route path="/chats" element={authUser ? <Chat /> : <Navigate to="/login" />} />
+          <Route path="/files" element={authUser ? <FileExplorer /> : <Navigate to="/login" />}/>
         </Routes>
       </main>
 

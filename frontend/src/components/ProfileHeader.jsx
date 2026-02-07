@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useAuthStore } from "../store/useAuthStore";
 
 export default function ProfileHeader({ info, setInfo, isOwner, editMode, setEditMode, saveChanges }) {
+    // eslint-disable-next-line no-unused-vars
     const [previewImage, setPreviewImage] = useState(info?.profilePicture || "/default.jpg");
 
     const {logout} = useAuthStore();

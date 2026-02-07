@@ -58,10 +58,11 @@ export const useMessageStore = create((set, get) => ({
     sendMessage: async ({ teamId, message, image }) => {
         const { messages } = get(); // Get current messages
         try {
+            const updates = {teamId, message, image};
             // 1. Send to Backend
             const res = await axiosInstance.post(
                 `/message`,
-                { teamId, message, image },
+                updates,
                 { withCredentials: true }
             );
 

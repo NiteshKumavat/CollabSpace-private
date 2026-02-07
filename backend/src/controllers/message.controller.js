@@ -1,6 +1,7 @@
 import Message from "../models/Message.js";
 import Project from "../models/Project.js";
 import { io } from "../lib/socket.js";
+import cloudinary from "../lib/cloudinary.js";
 
 // 1. Get All Teams (For Sidebar)
 export const getUserTeams = async (req, res) => {
@@ -47,6 +48,7 @@ export const sendMessage = async (req, res) => {
     // Frontend sends: { teamId, message, image }
     const { teamId, message, image } = req.body;
     const userId = req.user._id;
+    console.log("Received message:", { teamId, message, image });
 
     // Verify user is member
     const project = await Project.findById(teamId);
@@ -54,13 +56,20 @@ export const sendMessage = async (req, res) => {
 
     const isMember = project.team.some(m => m.userId.toString() === userId.toString());
     if (!isMember) return res.status(403).json({ message: "Not a member" });
+    let newImage = null;
+
+    if(image){
+      const upload = await cloudinary.uploader.upload(image);
+      newImage = upload.secure_url;
+      console.log(newImage);
+    }
 
     // Save to DB (Matching your Message.js Schema)
     const newMessage = new Message({
       userId,        // Your schema uses userId
       teamId,        // Your schema uses teamId
-      message,       // Your schema uses message
-      image,
+      message : message || "",       // Your schema uses message
+      image : newImage || null  // Your schema uses image
     });
 
     await newMessage.save();
