@@ -1,10 +1,26 @@
 import { generateToken } from "../lib/utils.js"
+import { getStreamToken } from "../lib/stream.js";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import Profile from "../models/Profile.js";
 
+
+
+export const getStreamTokenForUser = async (req, res) => {
+  try {
+    const user = req.user;
+    const streamToken = getStreamToken(user._id.toString());
+
+    if (!streamToken) {
+      return res.status(500).json({ message: "Error generating Stream token" });
+    }
+    res.status(200).json({ streamToken });
+  } catch (error) {
+    res.status(500).json({ message: "Internal Server Error" });
+  } 
+}
 
 export const login = async (req, res) => {
 

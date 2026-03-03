@@ -9,6 +9,7 @@ function DashBoard() {
     const [selectedProject, setSelectedProject] = useState({});
     const { projects, fetchAllProjects, loading, error } = useProjectStore();
     const [mode, setMode] = useState("view");
+    const [searchTerm, setSearchTerm] = useState(""); // ✅ Added search state
 
     const projectsRef = useRef(null);
 
@@ -23,14 +24,27 @@ function DashBoard() {
     }, [error]);
 
     const handleCreateClick = () => {
-        setSelectedProject(null); // Clear previous selection
-        setMode("create"); // Set mode to create
-        setOpen(true); // Open Modal
+        setSelectedProject(null);
+        setMode("create");
+        setOpen(true);
     };
 
     const handleExploreClick = () => {
         projectsRef.current?.scrollIntoView({ behavior: 'smooth' });
     };
+
+    // ✅ Filtered Projects
+    const filteredProjects = projects?.filter((project) => {
+        const search = searchTerm.toLowerCase();
+
+        return (
+            project.title?.toLowerCase().includes(search) ||
+            project.description?.toLowerCase().includes(search) ||
+            project.techStack?.some((tech) =>
+                tech.toLowerCase().includes(search)
+            )
+        );
+    });
 
     return (
         <div className="min-h-screen pb-20">
@@ -69,8 +83,7 @@ function DashBoard() {
                 </div>
             </div>
 
-            {/* PROJECTS SECTION */}
-            <div ref={projectsRef} className="max-w-7xl mx-auto px-6"> {/* Added Ref here */}
+            <div ref={projectsRef} className="max-w-7xl mx-auto px-6">
 
                 <div className="flex flex-col md:flex-row justify-between items-end md:items-center mb-10 gap-4">
                     <div>
@@ -82,6 +95,8 @@ function DashBoard() {
                         <input
                             type="text"
                             placeholder="Search projects..."
+                            value={searchTerm} // ✅ Controlled input
+                            onChange={(e) => setSearchTerm(e.target.value)} // ✅ Update state
                             className="input-field pl-4"
                         />
                     </div>
@@ -89,20 +104,26 @@ function DashBoard() {
 
                 {/* Grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 place-items-center sm:place-items-stretch">
+                    
                     {loading && (
                         <div className="col-span-full text-center py-20 text-gray-500">
                             Loading projects...
                         </div>
                     )}
 
-                    {!loading && projects?.length === 0 && (
+                    {!loading && filteredProjects?.length === 0 && (
                         <div className="col-span-full text-center py-20 bg-white/5 rounded-2xl border border-dashed border-white/10">
                             <p className="text-gray-300 text-lg">No projects found.</p>
-                            <button onClick={handleCreateClick} className="mt-4 text-indigo-400 hover:text-indigo-300">Create one now &rarr;</button>
+                            <button
+                                onClick={handleCreateClick}
+                                className="mt-4 text-indigo-400 hover:text-indigo-300"
+                            >
+                                Create one now &rarr;
+                            </button>
                         </div>
                     )}
 
-                    {!loading && projects?.map((project) => (
+                    {!loading && filteredProjects?.map((project) => (
                         <ProjectBox
                             key={project._id}
                             project={project}
@@ -118,7 +139,10 @@ function DashBoard() {
 
             {open && (
                 <ProjectDescription
-                    onClose={() => { setOpen(false); setSelectedProject({}) }}
+                    onClose={() => { 
+                        setOpen(false); 
+                        setSelectedProject({}); 
+                    }}
                     project={selectedProject}
                     mode={mode}
                     userRole={"viewer"}

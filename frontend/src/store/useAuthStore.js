@@ -10,8 +10,9 @@ export const useAuthStore = create((set, get) => ({
     isCheckingAuth: true,
     isSigningUp: false,
     isLoggingIn: false,
-    socket: null, // Store socket instance
-    onlineUsers: [], // Store who is online
+    socket: null, 
+    onlineUsers: [], 
+    token: null,
 
     checkAuth: async () => {
         try {
@@ -26,6 +27,20 @@ export const useAuthStore = create((set, get) => ({
         }
     },
 
+    getToken : async () => {
+        try {
+            const res = await axiosInstance.get("/auth/streamToken");
+            set({ token: res.data.streamToken });
+            
+            return res.data.streamToken;
+        } catch (error) {
+            console.log("Error generating Stream token:", error);
+            toast.error("Could not generate Stream token");
+        }
+    },
+
+
+
     signup: async (data) => {
         set({ isSigningUp: true });
         try {
@@ -34,7 +49,6 @@ export const useAuthStore = create((set, get) => ({
             toast.success("Account created successfully 🎉");
             get().connectSocket(); // Connect socket on signup
         } catch (error) {
-            console.log("Signup error:", error);
             toast.error(error?.response?.data?.message || "Signup failed");
         } finally {
             set({ isSigningUp: false });
@@ -42,7 +56,6 @@ export const useAuthStore = create((set, get) => ({
     },
 
     login: async (data) => {
-        console.log("useAuthStore login action called. Data:", data);
         set({ authUser: null });
         set({ isLoggingIn: true });
         try {
@@ -51,7 +64,7 @@ export const useAuthStore = create((set, get) => ({
             toast.success("Login successful 🚀");
             get().connectSocket(); // Connect socket on login
         } catch (error) {
-            console.log("Login error:", error);
+
             toast.error(error?.response?.data?.message || "Login failed");
         } finally {
             set({ isLoggingIn: false });
@@ -79,6 +92,17 @@ export const useAuthStore = create((set, get) => ({
         } catch (error) {
             console.log("Delete User error:", error);
             toast.error("Delete User failed");
+        }
+    },
+
+    generateToken: async () => {
+        try {
+            const res = await axiosInstance.get("/auth/streamToken");
+            return res.data.token;
+        } catch (error) {
+            console.log("Error generating Stream token:", error);
+            toast.error("Could not generate Stream token");
+            return null;
         }
     },
 

@@ -2,14 +2,26 @@ import React from 'react'
 
 export default function RequestBox({ name, desc, img, project,  onApprove, onReject }) {
   return (
+    
     <div className="w-full bg-white/10 backdrop-blur-md p-4 rounded-xl flex items-center justify-between shadow-lg mt-5">
 
       <div className="flex items-center gap-4">
-        <img
-          src={img}
-          alt="user"
-          className="w-14 h-14 rounded-full object-cover border border-white/30"
-        />
+        {
+          img ? (
+            <img
+              src={img}
+              alt="user"
+              className="w-14 h-14 rounded-full object-cover border border-white/30"
+            />
+          ) : (
+            <img 
+              src="/defaultUser.png"
+              alt="user"
+              className="w-14 h-14 rounded-full object-cover border border-white/30"
+            />
+          )
+        }
+        
 
         <div>
           <p className='text-black-200 fonst-extrabold text-base'>{project}</p>

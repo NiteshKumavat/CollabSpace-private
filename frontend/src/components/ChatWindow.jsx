@@ -3,13 +3,17 @@ import { FaPaperPlane, FaPlus, FaTimes, FaCircle } from "react-icons/fa";
 import { HiOutlinePhotograph } from "react-icons/hi"; // Using cleaner icons
 import { useMessageStore } from "../store/useMessageStore.js";
 import { useAuthStore } from "../store/useAuthStore.js";
+import { Link, useNavigate }  from "react-router";
+
 
 export default function ChatWindow({ project }) {
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
+  const navigate = useNavigate();
 
   const fileInputRef = useRef(null);
   const messageEndRef = useRef(null);
+
 
   const { messages, fetchMessages, sendMessage, subscribeToMessages, unsubscribeFromMessages } = useMessageStore();
   const { authUser } = useAuthStore();
@@ -66,7 +70,6 @@ export default function ChatWindow({ project }) {
   return (
     <div className="flex flex-col h-full bg-[#0F111A] relative shadow-2xl">
       
-      {/* ---------------- HEADER ---------------- */}
       <header className="px-6 py-4 border-b border-white/5 bg-[#0F111A]/80 backdrop-blur-xl flex items-center justify-between z-10">
         <div className="flex items-center gap-4">
           <div className="relative">
@@ -87,6 +90,15 @@ export default function ChatWindow({ project }) {
             </div>
           </div>
         </div>
+
+        <button
+          onClick={() => navigate(`/${project._id}/call`)}
+          className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-xl transition shadow-lg shadow-emerald-600/20"
+        >
+          <FaCircle size={10} className="animate-pulse" />
+          Call
+        </button>
+        
       </header>
 
       {/* ---------------- MESSAGES ---------------- */}

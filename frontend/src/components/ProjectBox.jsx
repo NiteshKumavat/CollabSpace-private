@@ -1,5 +1,4 @@
 import React from 'react';
-import { Toaster } from "react-hot-toast";
 import { useProjectStore } from '../store/useProjectStore.js';
 import { useAuthStore } from '../store/useAuthStore.js';
 
@@ -12,7 +11,10 @@ function ProjectBox({ onStart, project, isOwner }) {
 
     const showJoinButton = !isOwner && !isTeamMember && !hasRequested && authUser?._id;
 
-    const onJoin = async () => await requestToJoin(project._id);
+    const onJoin = async () => {
+        await requestToJoin(project._id);
+        
+    };
     const onLeave = async () => await leaveProject(project._id);
 
     return (
@@ -23,7 +25,6 @@ function ProjectBox({ onStart, project, isOwner }) {
             " 
             onClick={onStart}
         >
-            <Toaster />
 
             {/* Image Header with Gradient Overlay */}
             <div className="relative h-44 overflow-hidden">

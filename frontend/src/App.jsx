@@ -12,12 +12,12 @@ import Profile from "./pages/Profile.jsx";
 import Developers from "./pages/Developers.jsx";
 import Chat from "./pages/Chat.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
-import FileExplorer from "./pages/FileExplorer.jsx";
 
 // Component Imports
 import PageLoader from "./components/PageLoader.jsx";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import CallPage from "./pages/Call.jsx";
 
 export default function App() {
   const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
@@ -35,19 +35,15 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#0B0C15]">
-
-      {/* 👇 FIXED TOASTER CONFIGURATION */}
       <Toaster
         position="top-center"
         reverseOrder={false}
         toastOptions={{
-          // Force high Z-Index so it shows above Modals and Glass Cards
           style: {
             zIndex: 9999,
             background: '#333',
             color: '#fff',
           },
-          // Custom class for Tailwind override if needed
           className: 'z-[9999]',
         }}
       />
@@ -66,7 +62,7 @@ export default function App() {
           <Route path="/profile/:id" element={authUser ? <Profile /> : <Navigate to="/login" />} />
           <Route path="/developers" element={authUser ? <Developers /> : <Navigate to="/login" />} />
           <Route path="/chats" element={authUser ? <Chat /> : <Navigate to="/login" />} />
-          <Route path="/files" element={authUser ? <FileExplorer /> : <Navigate to="/login" />}/>
+          <Route path="/:id/call" element={authUser ? <CallPage /> : <Navigate to="/login" />} />
         </Routes>
       </main>
 

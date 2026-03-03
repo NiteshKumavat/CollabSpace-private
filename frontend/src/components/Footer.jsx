@@ -4,7 +4,7 @@ import { Github, Twitter, Linkedin, Mail, Phone } from "lucide-react";
 const Footer = () => {
   return (
     <footer className="bg-[#0B0C15] border-t border-white/5 pt-16 pb-8 px-6">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-10 mb-12">
 
         {/* Brand Section */}
         <div className="space-y-4">
@@ -54,8 +54,8 @@ const Footer = () => {
         <div>
           <h4 className="text-white font-semibold mb-6">Contact</h4>
           <ul className="space-y-4 text-sm text-gray-400">
-            <li className="flex items-center gap-2">
-              <Mail size={16} /> collabspace.tpoly@gmail.com
+            <li className="flex items-center gap-1">
+              <Mail size={16} /> collabspace@gmail.com
             </li>
             <li className="flex items-center gap-2">
               <Phone size={16} /> +91 91XXXXXXXX

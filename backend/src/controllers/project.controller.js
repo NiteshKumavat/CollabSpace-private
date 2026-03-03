@@ -176,7 +176,7 @@ export const requestToJoin = async (req, res) => {
 
     await project.save();
 
-    return res.status(200).json({ message: "Request sent successfully" });
+    return res.status(200).json({ message: "Request sent successfully", project : project });
 
   } catch (error) {
     return res.status(500).json({ message: "Internal Server Error" });

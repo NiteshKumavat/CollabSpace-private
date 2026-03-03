@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 
 export const useProfileStore = create((set) => ({
     allusers: [],
+    blockedIds : [],
     profile: null,
     newProfile: null,
     requests: null,
@@ -17,6 +18,7 @@ export const useProfileStore = create((set) => ({
 
             const res = await axiosInstance.get(`/profile/users`, { withCredentials: true });
             set({ allusers: res.data.profiles, loading: false });
+            
 
 
         } catch (error) {
@@ -31,15 +33,15 @@ export const useProfileStore = create((set) => ({
 
     fetchProfile: async (Id) => {
         try {
-            console.log("Fetching profile for ID:", Id);
             set({ loading: true });
 
             const res = await axiosInstance.get(`/profile/${Id}`, { withCredentials: true });
-            console.log(res.data);
+            
 
             set({
                 profile: res.data.profile,
                 requests: res.data.Request || null,
+                blockedIds: res.data.blockList || [],
                 error: null,
             });
 
@@ -56,8 +58,6 @@ export const useProfileStore = create((set) => ({
 
     updateProfile: async (updates) => {
         try {
-
-            console.log("Updating profile with data:", updates);
             set({ loading: true });
 
             const res = await axiosInstance.put(`/profile/update`, updates, {
@@ -87,12 +87,15 @@ export const useProfileStore = create((set) => ({
         try {
             await axiosInstance.put(`/profile/block/${userId}`, {}, { withCredentials: true });
 
-            set((state) => ({
-                profile: {
-                    ...state.profile,
-                    blockList: [...(state.profile?.blockList || []), userId],
-                },
-            }));
+            set(state => {
+                const existId = state.blockedIds.some(
+                    (id) => id === userId
+                );
+                if (existId) return state; // No duplicates
+                return {
+                    blockedIds: [...state.blockedIds, userId]
+                };
+            });
 
             toast.success("User blocked successfully");
 
@@ -109,10 +112,7 @@ export const useProfileStore = create((set) => ({
             await axiosInstance.put(`/profile/unblock/${userId}`, {}, { withCredentials: true });
 
             set((state) => ({
-                profile: {
-                    ...state.profile,
-                    blockList: state.profile?.blockList.filter((id) => id !== userId),
-                },
+                blockedIds: state.blockedIds.filter((id) => id !== userId)
             }));
 
             toast.success("User unblocked successfully");

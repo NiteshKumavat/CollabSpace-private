@@ -42,15 +42,14 @@ export const getTeamMessages = async (req, res) => {
   }
 };
 
-// 3. Send Message (The Socket Logic)
+
 export const sendMessage = async (req, res) => {
   try {
-    // Frontend sends: { teamId, message, image }
+
     const { teamId, message, image } = req.body;
     const userId = req.user._id;
-    console.log("Received message:", { teamId, message, image });
 
-    // Verify user is member
+
     const project = await Project.findById(teamId);
     if (!project) return res.status(404).json({ message: "Project not found" });
 
@@ -61,7 +60,6 @@ export const sendMessage = async (req, res) => {
     if(image){
       const upload = await cloudinary.uploader.upload(image);
       newImage = upload.secure_url;
-      console.log(newImage);
     }
 
     // Save to DB (Matching your Message.js Schema)

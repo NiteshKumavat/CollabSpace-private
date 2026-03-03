@@ -1,9 +1,4 @@
 export default function TeamSidebar({projects, setSelectedProject}) {
-  
-
-
-
-  console.log(projects);
 
   return (
     <div className="p-4">

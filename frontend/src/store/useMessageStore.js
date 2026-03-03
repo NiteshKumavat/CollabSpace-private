@@ -88,17 +88,13 @@ export const useMessageStore = create((set, get) => ({
      subscribeToMessages: (projectId) => {
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
-
-        console.log("📡 Subscribing to Room:", projectId);
         
         // 1. Join the Room
         socket.emit("joinProject", projectId);
 
         // 2. Listen for New Messages
         socket.on("newMessage", (newMessage) => {
-            console.log("⚡ Real-time message received:", newMessage);
-            
-            // 🐛 FIX: Check both 'teamId' and 'projectId' to be safe
+
             const messageRoomId = newMessage.teamId || newMessage.projectId;
 
             // Only add if it belongs to the currently open chat
@@ -115,8 +111,6 @@ export const useMessageStore = create((set, get) => ({
     unsubscribeFromMessages: () => {
         const socket = useAuthStore.getState().socket;
         if (!socket) return;
-        
-        console.log("🔕 Unsubscribing");
         socket.off("newMessage");
     },
 }));    

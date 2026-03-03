@@ -14,7 +14,7 @@ export const getAllUsers = async (req, res) => {
 
     if (!profiles.length) return res.status(404).json({ message: "No profiles found" });
 
-    res.status(200).json({ profiles });
+    res.status(200).json({ profiles, currentUserId: viewerId   });
 
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -29,6 +29,7 @@ export const getProfile = async (req, res) => {
     const viewerId = req.user._id;
 
     const ownerProfile = await Profile.findOne({ user: ownerId });
+    const viewerProfile = await Profile.findOne({ user: viewerId });
 
 
     if (!ownerProfile) return res.status(404).json({ message: "Profile Not Found" });
@@ -36,7 +37,7 @@ export const getProfile = async (req, res) => {
     const isBlocked = ownerProfile.blockList.includes(viewerId.toString());
     if (isBlocked) return res.status(403).json({ message: "You are blocked by this user" });
 
-    return res.status(200).json({ profile: ownerProfile });
+    return res.status(200).json({ profile: ownerProfile, blockList: viewerProfile.blockList });
 
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });
@@ -77,10 +78,13 @@ export const blockUser = async (req, res) => {
     const blockerId = req.user._id;
     const blockedId = req.params.userId;
 
-    await Profile.findOneAndUpdate(
+    const pro = await Profile.findOneAndUpdate(
       { user: blockerId },
       { $addToSet: { blockList: blockedId } }
     );
+
+    await pro.save();
+
 
     res.json({ message: "User blocked successfully." });
 

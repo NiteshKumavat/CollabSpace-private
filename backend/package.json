@@ -12,6 +12,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@stream-io/node-sdk": "^0.7.42",
+    "@stream-io/video-react-sdk": "^1.33.0",
     "bcryptjs": "^3.0.2",
     "cloudinary": "^2.7.0",
     "cookie-parser": "^1.4.7",
@@ -24,6 +26,7 @@
     "mongoose": "^8.18.3",
     "nodemailer": "^7.0.12",
     "nodemon": "^3.1.10",
-    "socket.io": "^4.8.3"
+    "socket.io": "^4.8.3",
+    "stream": "^0.0.3"
   }
 }

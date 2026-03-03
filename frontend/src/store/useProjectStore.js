@@ -94,6 +94,11 @@ export const useProjectStore = create((set, get) => ({
   requestToJoin: async (projectId) => {
     try {
       const res = await axiosInstance.put(`/project/${projectId}/request`);
+      set((state) => ({
+        projects: state.projects.map(p =>
+          p._id === projectId ? res.data.project : p
+        )
+      }));
       return { success: true, message: res.data.message };
     } catch (error) {
       return { success: false, message: error.response?.data?.message };

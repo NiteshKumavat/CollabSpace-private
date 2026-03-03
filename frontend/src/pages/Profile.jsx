@@ -21,9 +21,9 @@ export default function Profile() {
     const [showCreateProject, setShowCreateProject] = useState(false); 
 
     const { authUser } = useAuthStore();
-    const { profile, fetchProfile, updateProfile } = useProfileStore();
-    // eslint-disable-next-line no-unused-vars
-    const { fetchUserProjects, userProjects, createProject } = useProjectStore(); 
+    const { profile, fetchProfile, updateProfile, blockUser, unblockUser, blockedIds } = useProfileStore();
+
+    const { fetchUserProjects, userProjects} = useProjectStore(); 
 
     const isOwner = authUser?._id === id;
 
@@ -89,17 +89,19 @@ export default function Profile() {
         setShowCreateProject(true);
     };
 
+    const block = async (id) => await blockUser(id)
+    const unBlock = async (id) => await unblockUser(id)
+    const isBlocked = blockedIds.includes(id);
+
     return (
         <div className="min-h-screen w-full pb-20"> {/* Added pb-20 for footer space */}
             <Toaster />
            
-            {/* Added pt-24 to prevent overlap with the Fixed Header */}
+
             <div className="w-[90%] md:w-[80%] mx-auto pt-24 px-4">
                 
-                {/* Glassmorphism Card */}
                 <div className="glass-card p-8 rounded-2xl"> {/* Removed explicit bg-white/10, used glass-card class */}
 
-                    {/* HEADER */}
                     <ProfileHeader
                         info={info}
                         setInfo={setInfo}
@@ -133,7 +135,7 @@ export default function Profile() {
 
                     {isOwner && <ProfileRequests id={id}/>}
 
-                    <ProfileActions isOwner={isOwner} profileId={id} />
+                    <ProfileActions isOwner={isOwner} profileId={id} block={block} unBlock={unBlock} isBlocked={isBlocked}/>
                 </div>
             </div>
 
@@ -144,6 +146,7 @@ export default function Profile() {
                     onClose={() => setShowCreateProject(false)}
                     userRole={isOwner ? "admin" : "viewer"}
                     setMode={() => {}}
+                    
                 />
             )}
         </div>

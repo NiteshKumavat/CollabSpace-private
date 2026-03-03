@@ -6,7 +6,7 @@ import { useMessageStore } from "../store/useMessageStore.js";
 import { useAuthStore } from "../store/useAuthStore.js";
 import toast from "react-hot-toast"; // Ensure toast is imported for feedback
 
-const ProjectDescription = ({ onClose, project, mode, userRole, setMode }) => {
+const ProjectDescription = ({ onClose, project, mode,  setMode }) => {
   // Destructured 'generateAIProject' from store
   const { createProject, updateProject, deleteProject, requestToJoin, leaveProject, generateAIProject } = useProjectStore();
   const { authUser } = useAuthStore();
@@ -55,7 +55,6 @@ const ProjectDescription = ({ onClose, project, mode, userRole, setMode }) => {
     }
 
     setIsGenerating(true);
-    // Call the function we added to the store earlier
     const res = await generateAIProject(form.title);
     setIsGenerating(false);
 
@@ -158,8 +157,6 @@ const ProjectDescription = ({ onClose, project, mode, userRole, setMode }) => {
         </button>
 
         <div className="overflow-y-auto p-8 custom-scrollbar">
-
-          {/* Top Section */}
           <div className="flex flex-col sm:flex-row gap-6 items-start sm:items-center">
             <div className="relative group shrink-0">
               <div className="w-24 h-24 rounded-2xl border-2 border-white/10 shadow-lg overflow-hidden bg-[#0B0C15]">

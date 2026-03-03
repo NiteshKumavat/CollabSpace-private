@@ -5,8 +5,10 @@ import { useState, useEffect } from "react";
 
 export default function Chat() {
   // 1. Get 'projects' from MessageStore (This includes teams you JOINED)
-  const { projects, getMyProjects, loading } = useMessageStore(); 
+  const { projects, getMyProjects } = useMessageStore(); 
   const [selectedProject, setSelectedProject] = useState(null);
+  
+  
 
   // 2. Fetch the teams
   useEffect(() => {

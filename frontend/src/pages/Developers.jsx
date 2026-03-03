@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import UserInfo from '../components/UserInfo.jsx';
 import { useProfileStore } from '../store/useProfileStore.js';
-import { Toaster } from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 function Developers() {
@@ -24,7 +23,6 @@ function Developers() {
 
     return (
         <div className="min-h-screen w-full pb-20"> {/* Added pb-20 for footer space */}
-            <Toaster />
             
             {/* Added pt-10 to push content down from the Header */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-10">
