@@ -1,12 +1,12 @@
 import express from 'express';
-import { login, register, logout, deleteUser, checkAuth, getStreamTokenForUser } from '../controllers/auth.controller.js';
+import { login, register, logout, deleteUser, checkAuth, getStreamTokenForUser, googleAuth } from '../controllers/auth.controller.js';
 import { protectRoute } from '../middleware/auth.middleware.js';
 
 
 
 const router = express.Router();
 
-
+router.post('/google', googleAuth);
 router.post('/login', login);
 router.post('/register', register);
 router.post('/logout', logout);

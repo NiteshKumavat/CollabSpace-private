@@ -13,4 +13,6 @@ export const ENV = {
     CLIENT_URL : process.env.CLIENT_URL,
     STREAM_API_KEY:process.env.STREAM_API_KEY,
     STREAM_API_SECRET:process.env.STREAM_API_SECRET,
+    GOOGLE_AUTH_CLIENT_ID:process.env.GOOGLE_AUTH_CLIENT_ID,
+    GOOGLE_CLIENT_SECRET:process.env.GOOGLE_CLIENT_SECRET,
 };

@@ -5,8 +5,50 @@ import crypto from "crypto";
 import nodemailer from "nodemailer";
 import User from "../models/User.js";
 import Profile from "../models/Profile.js";
+import { OAuth2Client } from "google-auth-library";
+import { ENV } from "../lib/env.js";
 
 
+export const googleAuth = async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Token missing" });
+    }
+
+    const client = new OAuth2Client(ENV.GOOGLE_AUTH_CLIENT_ID);
+
+    const ticket = await client.verifyIdToken({
+      idToken: token,
+      audience: ENV.GOOGLE_AUTH_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    const { email } = payload;
+
+    let user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "No user found with this email" });
+    }
+
+    generateToken(user._id, res);
+
+    const profile = await Profile.findOne({ user: user._id });
+
+    res.status(200).json({
+      _id: user._id,
+      fullName: user.fullName,
+      email: user.email,
+      profilePicture: profile?.profilePicture || "",
+    });
+
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
 
 export const getStreamTokenForUser = async (req, res) => {
   try {

@@ -14,6 +14,25 @@ export const useAuthStore = create((set, get) => ({
     onlineUsers: [], 
     token: null,
 
+
+    googleAuthentication: async (credentialResponse) => {
+        set({ authUser: null });
+        set({ isLoggingIn: true });
+        try {
+            const token = credentialResponse.credential;
+            console.log("Google Credential Token:", token);
+            const res = await axiosInstance.post("/auth/google", {token});
+            set({ authUser: res.data });
+            toast.success("Login successful 🚀");
+            get().connectSocket(); 
+        } catch (error) {
+            console.log("Error : ", error.response?.data?.message)
+            set({ authUser: null });
+        } finally {
+            set({ isLoggingIn: false });
+        }
+    },
+
     checkAuth: async () => {
         try {
             const res = await axiosInstance.get("/auth/check");

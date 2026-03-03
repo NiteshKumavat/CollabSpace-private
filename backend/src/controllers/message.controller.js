@@ -62,12 +62,12 @@ export const sendMessage = async (req, res) => {
       newImage = upload.secure_url;
     }
 
-    // Save to DB (Matching your Message.js Schema)
+
     const newMessage = new Message({
-      userId,        // Your schema uses userId
-      teamId,        // Your schema uses teamId
-      message : message || "",       // Your schema uses message
-      image : newImage || null  // Your schema uses image
+      userId,        
+      teamId,       
+      message : message || "",       
+      image : newImage || null 
     });
 
     await newMessage.save();
