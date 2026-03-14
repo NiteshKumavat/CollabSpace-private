@@ -3,14 +3,21 @@ export default function ProfileActions({
     profileId, 
     isBlocked, 
     block, 
-    unBlock 
+    unBlock ,
+    deleteProfile
 }) {
+
     return (
         <div className="flex justify-center mt-6">
 
             {isOwner ? (
                 <button 
                     className="bg-red-500 text-white px-5 py-2 rounded-lg hover:bg-red-600 transition"
+                    onClick={async function() {
+                        await deleteProfile();
+                        window.location.reload();
+                        
+                    }}
                 >
                     Delete Profile
                 </button>

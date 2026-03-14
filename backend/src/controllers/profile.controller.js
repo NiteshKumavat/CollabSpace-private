@@ -1,5 +1,7 @@
 import Profile from "../models/Profile.js";
 import cloudinary from "../lib/cloudinary.js";
+import Project from "../models/Project.js";
+import User from "../models/User.js";
 
 
 export const getAllUsers = async (req, res) => {
@@ -140,14 +142,53 @@ export const availability = async (req, res) => {
 export const deleteProfile = async (req, res) => {
   try {
     const userId = req.user._id;
+    console.log("Deleting profile for userId:", userId);
+
+    const userProjects = await Project.find({
+      $or: [
+        { "team.userId": userId },
+        { "requests.userId": userId },
+        { adminId: userId }
+      ]
+    });
+
+    for (const project of userProjects) {
+
+      // If user is admin -> delete project
+      if (project.adminId.toString() === userId.toString()) {
+        await project.deleteOne();
+      } else {
+
+        // Remove from team
+        project.team = project.team.filter(
+          member => member.userId.toString() !== userId.toString()
+        );
+
+        // Remove from requests
+        project.requests = project.requests.filter(
+          req => req.userId.toString() !== userId.toString()
+        );
+
+        await project.save();
+      }
+    }
 
     const deleted = await Profile.findOneAndDelete({ user: userId });
+    const deletedUser = await User.findByIdAndDelete(userId);
 
-    if (!deleted) return res.status(400).json({ message: "Profile deletion failed" });
+    if (!deleted || !deletedUser)
+      return res.status(400).json({ message: "Profile deletion failed" });
+
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    });
 
     res.status(200).json({ message: "Profile deleted successfully" });
 
   } catch (error) {
+    console.log("Error deleting profile:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
