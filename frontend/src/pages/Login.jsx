@@ -1,4 +1,3 @@
-// frontend/src/pages/Login.jsx
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
@@ -91,9 +90,17 @@ export default function Login() {
                         onError={() =>{
                             console.log("Google Login Failed")
                         }}
-                
                     />
                 </div>
+            </div>
+
+            <div className="mt-8 text-center pt-6 border-t border-white/10">
+                <p className="text-gray-400 text-sm">
+                    Create a new account{" "}
+                    <Link to="/register" className="text-indigo-400 hover:text-indigo-300 font-medium hover:underline">
+                    Sign Up
+                    </Link>
+                </p>
             </div>
         </div>
     </div>

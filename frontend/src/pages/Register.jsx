@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuthStore } from "../store/useAuthStore";
 import { Mail, Lock, User, Loader2, ArrowRight } from "lucide-react";
-import toast from "react-hot-toast";
 
 export default function Register() {
   const [formData, setFormData] = useState({ fullName: "", email: "", password: "" });
@@ -11,10 +10,6 @@ export default function Register() {
   const handleSubmit = (e) => {
     e.preventDefault();
     signup(formData);
-  };
-
-  const handleGoogleLogin = () => {
-    toast.error("Google Signup is currently disabled in Developer Mode.");
   };
 
   return (

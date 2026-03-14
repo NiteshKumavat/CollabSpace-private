@@ -18,6 +18,7 @@ import PageLoader from "./components/PageLoader.jsx";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import CallPage from "./pages/Call.jsx";
+import Pricing from "./pages/Pricing.jsx";
 
 export default function App() {
   const { checkAuth, isCheckingAuth, authUser } = useAuthStore();
@@ -63,6 +64,7 @@ export default function App() {
           <Route path="/developers" element={authUser ? <Developers /> : <Navigate to="/login" />} />
           <Route path="/chats" element={authUser ? <Chat /> : <Navigate to="/login" />} />
           <Route path="/:id/call" element={authUser ? <CallPage /> : <Navigate to="/login" />} />
+          <Route path="/pricing" element={authUser ? <Pricing /> : <Navigate to="/login" />} />
         </Routes>
       </main>
 
