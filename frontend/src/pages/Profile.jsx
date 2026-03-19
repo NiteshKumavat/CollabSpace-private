@@ -22,6 +22,7 @@ export default function Profile() {
 
     const { authUser } = useAuthStore();
     const { profile, fetchProfile, updateProfile, blockUser, unblockUser, blockedIds } = useProfileStore();
+    const { deleteProfile } = useProfileStore();    
 
     const { fetchUserProjects, userProjects} = useProjectStore(); 
 
@@ -135,7 +136,7 @@ export default function Profile() {
 
                     {isOwner && <ProfileRequests id={id}/>}
 
-                    <ProfileActions isOwner={isOwner} profileId={id} block={block} unBlock={unBlock} isBlocked={isBlocked}/>
+                    <ProfileActions isOwner={isOwner} profileId={id} block={block} unBlock={unBlock} isBlocked={isBlocked} deleteProfile ={deleteProfile}/>
                 </div>
             </div>
 

@@ -146,7 +146,7 @@ export const useProfileStore = create((set) => ({
         }
     },
 
-    /** -------- Delete Profile -------- */
+ 
     deleteProfile: async () => {
         try {
             await axiosInstance.delete(
