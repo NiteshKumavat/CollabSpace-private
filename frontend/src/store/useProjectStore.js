@@ -1,9 +1,11 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios.js";
+import { useAuthStore } from "./useAuthStore.js";
 
 export const useProjectStore = create((set, get) => ({
   projects: [],
   userProjects: [],
+  projectUpdates: {},
   loading: false,
   error: null,
 
@@ -126,6 +128,7 @@ export const useProjectStore = create((set, get) => ({
       const res = await axiosInstance.post("/project/generate-ai", { title });
       return { success: true, data: res.data };
     } catch (error) {
+      // toast.error(error.response?.data?.message || 'API Key Invalid or Network Error');
       return {
         success: false,
         message: error.response?.data?.message || "AI Generation Failed"
@@ -147,7 +150,92 @@ export const useProjectStore = create((set, get) => ({
     } catch (error) {
       return { success: false, message: error.response?.data?.message };
     }
-  }
+  },
+
+  fetchProjectUpdates: async (projectId) => {
+    try {
+      const res = await axiosInstance.get(`/project/${projectId}/updates`);
+      set((state) => ({
+        projectUpdates: { ...state.projectUpdates, [projectId]: res.data }
+      }));
+    } catch (error) {
+      console.log("Error fetching updates:", error);
+    }
+  },
+
+  addProjectUpdate: async (projectId, data) => {
+    try {
+      const res = await axiosInstance.post(`/project/${projectId}/updates`, data);
+      set((state) => {
+        const currentUpdates = state.projectUpdates[projectId] || [];
+        const exists = currentUpdates.some(u => u._id === res.data._id);
+        if (exists) return state;
+
+        return {
+          projectUpdates: {
+            ...state.projectUpdates,
+            [projectId]: [...currentUpdates, res.data]
+          }
+        };
+      });
+      return { success: true };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message };
+    }
+  },
+
+  subscribeToProjectUpdates: (projectId) => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+    
+    socket.emit("joinProject", projectId);
+    socket.on("new-project-update", (update) => {
+      set((state) => {
+        const currentUpdates = state.projectUpdates[projectId] || [];
+        const exists = currentUpdates.some(u => u._id === update._id);
+        if (exists) return state;
+        
+        return {
+          projectUpdates: {
+            ...state.projectUpdates,
+            [projectId]: [...currentUpdates, update]
+          }
+        };
+      });
+    });
+  },
+
+  unsubscribeFromProjectUpdates: () => {
+    const socket = useAuthStore.getState().socket;
+    if (!socket) return;
+    socket.off("new-project-update");
+  },
+
+  removeUserFromProject: async (projectId, userId) => {
+    try {
+      const res = await axiosInstance.put(`/project/remove/member`, { projectId, userId });
+
+      set((state) => ({
+        userProjects: state.userProjects.map(p => {
+          if (p._id === projectId) {
+            return {
+              ...p,
+              team: p.team.filter(member => member.userId !== userId),
+            };
+          }else{
+            return p;
+          }
+        }
+          
+        )
+      }));
+
+      
+      return { success: true, message: res.data.message };
+    } catch (error) {
+      return { success: false, message: error.response?.data?.message };
+    }
+  },
 
 }));
 

@@ -23,6 +23,7 @@ const STREAM_API_KEY = import.meta.env.VITE_STREAM_API_KEY;
 const CallPage = () => {
   const { id: callId } = useParams();
   const { authUser, getToken } = useAuthStore();
+  const navigate = useNavigate();
 
   const [client, setClient] = useState(null);
   const [call, setCall] = useState(null);
@@ -44,7 +45,12 @@ const CallPage = () => {
   });
 
   useEffect(() => {
-    if (!authUser || !token || hasInitializedRef.current) return;
+    if (!authUser || authUser.plan !== 'pro') { 
+      toast.error('Pro Feature Only!'); 
+      navigate('/pricing'); 
+      return; 
+    }
+    if ( !token || hasInitializedRef.current) return;
 
     let mounted = true;
     let videoClient;
@@ -106,7 +112,18 @@ const CallPage = () => {
 
       hasInitializedRef.current = false;
     };
-  }, [authUser, token, callId]);
+  }, [authUser, token, callId, navigate]);
+
+  if (authUser?.plan !== 'pro') {
+    return (
+      <div className='flex flex-col items-center justify-center h-screen bg-black text-white'>
+        <h1 className="text-3xl font-bold mb-4 text-purple-400">Pro Feature Only</h1>
+        <button onClick={() => navigate('/pricing')} className="px-6 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-500 hover:opacity-90 transition">
+          Upgrade Now
+        </button>
+      </div>
+    );
+  }
 
   if (isLoading) return <PageLoader />;
 

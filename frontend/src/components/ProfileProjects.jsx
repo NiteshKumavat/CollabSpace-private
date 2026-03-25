@@ -6,10 +6,13 @@ export default function ProfileProjects({ projects, isOwner, onCreate }) {
     const [selectedProject, setSelectedProject] = useState(null);
     const [modalMode, setModalMode] = useState("view");
 
+
     const handleProjectClick = (project) => {
         setSelectedProject(project);
         setModalMode("view");
     };
+
+    
 
     return (
         <div className="mt-6">
@@ -50,6 +53,7 @@ export default function ProfileProjects({ projects, isOwner, onCreate }) {
                         setSelectedProject(null);
                         setModalMode("view");
                     }}
+                    
                     userRole={isOwner ? "admin" : "viewer"}
                     setMode={setModalMode}
                 />

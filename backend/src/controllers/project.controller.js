@@ -2,6 +2,7 @@ import Profile from "../models/Profile.js";
 import Project from "../models/Project.js";
 import cloudinary from "../lib/cloudinary.js";
 import Groq from "groq-sdk";
+import { io } from "../lib/socket.js";
 
 export const getAllProjects = async (req, res) => {
   try {
@@ -56,6 +57,16 @@ export const createProject = async (req, res) => {
     const adminId = req.user._id;
 
     if (!title || !description) return res.status(400).json({ message: "Title and Description are required" });
+
+    console.log('User Plan:', req.user.plan);
+
+    // Enforce Pro plan limit
+    if (req.user.plan === "free") {
+      const projectCount = await Project.countDocuments({ adminId });
+      if (projectCount >= 2) {
+        return res.status(403).json({ message: "Free users can only create up to 2 projects. Please upgrade to Pro." });
+      }
+    }
 
     let imageUrl = null;
     if (req.body.image) {
@@ -160,8 +171,24 @@ export const requestToJoin = async (req, res) => {
 
     const project = await Project.findById(projectId);
 
-
     if (!project) return res.status(404).json({ message: "Project not found" });
+
+    // 1. Admin cannot join their own project
+    if (project.adminId.toString() === userId.toString()) {
+      return res.status(400).json({ message: "Admin cannot join their own project" });
+    }
+
+    // 2. Check Profile blocklist
+    const adminProfile = await Profile.findOne({ user: project.adminId });
+    if (adminProfile && adminProfile.blockList.includes(userId.toString())) {
+      return res.status(403).json({ message: "You are blocked by the project admin" });
+    }
+
+    // 3. Check if the user isAvailableForCollab
+    const userProfile = await Profile.findOne({ user: userId });
+    if (userProfile && !userProfile.isAvailableForCollab) {
+      return res.status(400).json({ message: "You must be available for collaboration to request joining a project" });
+    }
 
     const alreadyMember = project.team.some(member => member.userId.toString() === userId.toString());
     const alreadyRequested = project.requests.some(req => req.userId.toString() === userId.toString());
@@ -246,6 +273,16 @@ export const generateProjectAI = async (req, res) => {
       return res.status(400).json({ message: "Project title is required" });
     }
 
+    // AI Gate: Limit free users to 3 uses
+    if (req.user.plan === "free") {
+      if (req.user.magicWandUses >= 3) {
+        return res.status(403).json({ message: "Free users are limited to 3 Magic Wand uses. Please upgrade to Pro." });
+      }
+      // Increment usages
+      req.user.magicWandUses += 1;
+      await req.user.save();
+    }
+
     const prompt = `
       Act as a Senior CTO. I am building a project titled: "${title}".
       1. Write a professional, concise description (max 2 sentences) explaining what this project does.
@@ -260,16 +297,109 @@ export const generateProjectAI = async (req, res) => {
 
     const chatCompletion = await groq.chat.completions.create({
       messages: [{ role: "user", content: prompt }],
-      model: "llama3-8b-8192", // Fast and Free
+      model: "llama-3.3-70b-versatile", // Currently supported model
       response_format: { type: "json_object" }, // Enforce JSON
     });
 
-    const aiResponse = JSON.parse(chatCompletion.choices[0].message.content);
+    console.log('GROQ API Key Check:', !!process.env.GROQ_API_KEY);
+    console.log('Groq Response:', chatCompletion.choices[0].message.content);
+
+    let content = chatCompletion.choices[0].message.content;
+
+    // Safety fallback for unexpected markdown wrappers
+    if (content.includes('```json')) {
+      content = content.split('```json')[1].split('```')[0];
+    } else if (content.includes('```')) {
+      content = content.split('```')[1].split('```')[0];
+    }
+
+    const aiResponse = JSON.parse(content.trim());
 
     return res.status(200).json(aiResponse);
 
   } catch (error) {
     console.error("AI Generation Error:", error);
     return res.status(500).json({ message: "Failed to generate AI content" });
+  }
+};
+
+export const getProjectUpdates = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const project = await Project.findById(projectId).populate({
+      path: 'updates.sender',
+      select: 'fullName profilePicture'
+    });
+
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    return res.status(200).json(project.updates);
+  } catch (error) {
+    console.error("Error fetching project updates:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const addProjectUpdate = async (req, res) => {
+  try {
+    const { projectId } = req.params;
+    const { content, type } = req.body;
+    const userId = req.user._id;
+
+    if (!content) return res.status(400).json({ message: "Content is required" });
+
+    const project = await Project.findById(projectId);
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    // Validate user is authorized (admin or team member)
+    const isMember = project.team.some(member => member.userId.toString() === userId.toString());
+    const isAdmin = project.adminId.toString() === userId.toString();
+    if (!isMember && !isAdmin) return res.status(403).json({ message: "Not authorized to update this project" });
+
+    const newUpdate = {
+      sender: userId,
+      content,
+      type: type || "text",
+      createdAt: new Date(),
+    };
+
+    project.updates.push(newUpdate);
+    await project.save();
+
+    const populatedProject = await Project.findById(projectId).populate({
+      path: 'updates.sender',
+      select: 'fullName profilePicture'
+    });
+
+    const populatedUpdate = populatedProject.updates[populatedProject.updates.length - 1];
+
+    // Emit to socket room
+    io.to(projectId).emit('new-project-update', populatedUpdate);
+
+    return res.status(201).json(populatedUpdate);
+  } catch (error) {
+    console.error("Error adding project update:", error);
+    return res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const removeUserFromProject = async (req, res) => {
+  try {
+    const { projectId, userId } = req.body;
+    const adminId = req.user._id;
+
+    const project = await Project.findById(projectId);
+
+    if (!project) return res.status(404).json({ message: "Project not found" });
+
+    if (project.adminId.toString() !== adminId.toString())
+      return res.status(403).json({ message: "Only admin can remove members" });
+
+    project.team = project.team.filter(member => member.userId.toString() !== userId.toString());
+    await project.save();
+
+    return res.status(200).json({ message: "Member removed", project });
+  } catch (error) {
+    return res.status(500).json({ message: "Internal Server Error" });
   }
 };

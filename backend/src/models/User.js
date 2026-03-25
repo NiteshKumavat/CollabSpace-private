@@ -19,6 +19,18 @@ const userSchema = new mongoose.Schema({
 
     resetPasswordToken: String,
     resetPasswordExpires: Date,
+
+    plan: {
+        type: String,
+        enum: ['free', 'pro'],
+        default: 'free'
+    },
+    razorpay_order_id: String,
+    razorpay_payment_id: String,
+    magicWandUses: {
+        type: Number,
+        default: 0
+    },
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {

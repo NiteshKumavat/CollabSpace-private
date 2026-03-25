@@ -125,6 +125,34 @@ export const useAuthStore = create((set, get) => ({
         }
     },
 
+    createPaymentOrder: async () => {
+        try {
+            const res = await axiosInstance.post("/payments/create-order");
+            return res.data.order;
+        } catch (error) {
+            console.error("Error creating payment order:", error);
+            toast.error(error?.response?.data?.message || "Could not start payment");
+            return null;
+        }
+    },
+
+    verifyPayment: async (paymentDetails) => {
+        try {
+            await axiosInstance.post("/payments/verify-payment", paymentDetails);
+            
+            // Update the local auth user to "pro" plan
+            const updatedUser = { ...get().authUser, plan: 'pro' };
+            set({ authUser: updatedUser });
+            
+            toast.success("Welcome to Pro! 🎉");
+            return true;
+        } catch (error) {
+            console.error("Payment verification failed:", error);
+            toast.error(error?.response?.data?.message || "Payment verification failed");
+            return false;
+        }
+    },
+
     // --- SOCKET LOGIC ---
     connectSocket: () => {
         const { authUser } = get();

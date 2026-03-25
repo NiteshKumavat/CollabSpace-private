@@ -42,6 +42,7 @@ export const googleAuth = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePicture: profile?.profilePicture || "",
+      plan: user.plan,
     });
 
   } catch (error) {
@@ -88,6 +89,7 @@ export const login = async (req, res) => {
       fullName: newUser.fullName,
       email: newUser.email,
       profilePicture: profile?.profilePicture || "",
+      plan: newUser.plan,
     });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" })
@@ -141,6 +143,7 @@ export const register = async (req, res) => {
         fullName: newUser.fullName,
         email: newUser.email,
         profilePicture: "",
+        plan: newUser.plan,
         isNewUser: true
       });
     }
@@ -246,6 +249,7 @@ export const checkAuth = async (req, res) => {
       fullName: user.fullName,
       email: user.email,
       profilePicture: profile?.profilePicture || "",
+      plan: user.plan,
     });
   } catch (error) {
     res.status(500).json({ message: "Internal Server Error" });

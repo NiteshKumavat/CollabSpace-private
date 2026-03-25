@@ -10,6 +10,8 @@ import {
   acceptRequest,
   generateProjectAI,
   rejectRequest,
+  addProjectUpdate,
+  getProjectUpdates,
 } from "../controllers/project.controller.js";
 import { protectRoute } from "../middleware/auth.middleware.js";
 
@@ -34,5 +36,7 @@ router.put("/:projectId/request/:requestUserId/accept", protectRoute, acceptRequ
 router.post("/generate-ai", protectRoute, generateProjectAI);
 router.put("/:projectId/request/:requestUserId/reject", protectRoute, rejectRequest);
 
+router.post("/:projectId/updates", protectRoute, addProjectUpdate);
+router.get("/:projectId/updates", protectRoute, getProjectUpdates);
 
 export default router;

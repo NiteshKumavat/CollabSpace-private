@@ -4,9 +4,11 @@ import { HiOutlinePhotograph } from "react-icons/hi"; // Using cleaner icons
 import { useMessageStore } from "../store/useMessageStore.js";
 import { useAuthStore } from "../store/useAuthStore.js";
 import { Link, useNavigate }  from "react-router";
+import ProjectFeed from "./ProjectFeed.jsx";
 
 
 export default function ChatWindow({ project }) {
+  const [activeTab, setActiveTab] = useState("chat");
   const [text, setText] = useState("");
   const [image, setImage] = useState(null);
   const navigate = useNavigate();
@@ -82,11 +84,28 @@ export default function ChatWindow({ project }) {
           </div>
           <div>
             <h2 className="text-white font-medium tracking-tight leading-none mb-1">{project.title}</h2>
-            <div className="flex items-center gap-2">
-              <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
-              <p className="text-[11px] text-gray-400 font-medium uppercase tracking-wider">
-                {project.team.length} Members Online
-              </p>
+            <div className="flex items-center gap-6 mt-1.5">
+              <div className="flex bg-[#1A1C26] rounded-[9px] p-0.5 shadow-inner border border-white/5">
+                <button 
+                  onClick={() => setActiveTab('chat')} 
+                  className={`px-4 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider transition ${activeTab === 'chat' ? 'bg-[#2A2D3E] text-white shadow-md' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  Chat
+                </button>
+                <button 
+                  onClick={() => setActiveTab('feed')} 
+                  className={`px-4 py-1 rounded-md text-[11px] font-bold uppercase tracking-wider transition ${activeTab === 'feed' ? 'bg-[#2A2D3E] text-white shadow-md' : 'text-gray-500 hover:text-gray-300'}`}
+                >
+                  Activity
+                </button>
+              </div>
+
+              <div className="flex items-center gap-1.5">
+                <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500 relative"><span className="absolute inline-flex w-full h-full rounded-full bg-emerald-400 opacity-75 animate-ping"></span></span>
+                <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-0.5">
+                  {project.team.length} Online
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -101,8 +120,10 @@ export default function ChatWindow({ project }) {
         
       </header>
 
-      {/* ---------------- MESSAGES ---------------- */}
-      <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8 scrollbar-hide">
+      {/* ---------------- CONTENT ---------------- */}
+      {activeTab === "chat" ? (
+        <>
+          <div className="flex-1 overflow-y-auto px-6 py-8 space-y-8 scrollbar-hide">
         {messages.map((msg, idx) => {
           const senderId = msg.userId?._id || msg.userId;
           const isMe = senderId === authUser._id;
@@ -143,7 +164,7 @@ export default function ChatWindow({ project }) {
       </div>
 
       {/* ---------------- INPUT AREA ---------------- */}
-      <footer className="p-6 bg-gradient-to-t from-[#0F111A] via-[#0F111A] to-transparent">
+      <footer className="p-6 bg-gradient-to-t from-[#0F111A] via-[#0F111A] to-transparent shrink-0">
         <form onSubmit={handleSend} className="max-w-5xl mx-auto relative">
           
           {/* Image Preview Overlay */}
@@ -196,6 +217,10 @@ export default function ChatWindow({ project }) {
           </div>
         </form>
       </footer>
+        </>
+      ) : (
+        <ProjectFeed project={project} />
+      )}
     </div>
   );
 }

@@ -10,6 +10,8 @@ export const useProfileStore = create((set) => ({
     requests: null,
     loading: false,
     error: null,
+    githubRepos: [],
+    loadingGithub: false,
 
 
     getUsers: async () => {
@@ -91,7 +93,7 @@ export const useProfileStore = create((set) => ({
                 const existId = state.blockedIds.some(
                     (id) => id === userId
                 );
-                if (existId) return state; // No duplicates
+                if (existId) return state; 
                 return {
                     blockedIds: [...state.blockedIds, userId]
                 };
@@ -160,6 +162,20 @@ export const useProfileStore = create((set) => ({
             const message = err.response?.data?.message || "Error deleting profile";
             toast.error(message);
             set({ error: message });
+        }
+    },
+
+    fetchGithubRepos: async (username) => {
+        try {
+            set({ loadingGithub: true, error: null });
+            const res = await axiosInstance.get(`/profile/github/${encodeURIComponent(username)}`, { withCredentials: true });
+            set({ githubRepos: res.data });
+        } catch (err) {
+            const message = err.response?.data?.message || "Failed to fetch GitHub repositories";
+            toast.error(message);
+            set({ error: message, githubRepos: [] });
+        } finally {
+            set({ loadingGithub: false });
         }
     },
 

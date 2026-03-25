@@ -2,6 +2,7 @@ import Profile from "../models/Profile.js";
 import cloudinary from "../lib/cloudinary.js";
 import Project from "../models/Project.js";
 import User from "../models/User.js";
+import axios from "axios";
 
 
 export const getAllUsers = async (req, res) => {
@@ -60,6 +61,8 @@ export const updateProfile = async (req, res) => {
       updates.profilePicture = upload.secure_url;
     }
 
+    console.log("Updating profile for userId:", userId, "with updates:", updates);
+
     const updated = await Profile.findOneAndUpdate(
       { user: userId },
       updates,
@@ -69,6 +72,7 @@ export const updateProfile = async (req, res) => {
     res.status(200).json(updated);
 
   } catch (error) {
+    console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -159,12 +163,12 @@ export const deleteProfile = async (req, res) => {
         await project.deleteOne();
       } else {
 
-        // Remove from team
+        //Remove from team
         project.team = project.team.filter(
           member => member.userId.toString() !== userId.toString()
         );
 
-        // Remove from requests
+
         project.requests = project.requests.filter(
           req => req.userId.toString() !== userId.toString()
         );
@@ -192,3 +196,29 @@ export const deleteProfile = async (req, res) => {
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
+
+export const getGithubRepos = async (req, res) => {
+  try {
+    const { username: input } = req.params;
+    const username = input.split('/').filter(Boolean).pop();
+    const response = await axios.get(`https://api.github.com/users/${username}/repos?sort=updated&per_page=6`);
+    
+    // Return only essential data
+    const repos = response.data.map((repo) => ({
+      id: repo.id,
+      name: repo.name,
+      description: repo.description,
+      html_url: repo.html_url,
+      stargazers_count: repo.stargazers_count,
+      language: repo.language,
+      forks_count: repo.forks_count,
+    }));
+
+    res.status(200).json(repos);
+  } catch (error) {
+    console.error("Error fetching GitHub repos:", error.message);
+    res.status(500).json({ message: "Error fetching GitHub repos" });
+  }
+};
+
+

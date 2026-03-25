@@ -29,6 +29,11 @@ const projectSchema = new mongoose.Schema(
       default: [],
     },
 
+    repoLink: {
+      type: String,
+      default: "",
+    },
+
     team: [
       {
         userId: {
@@ -69,8 +74,30 @@ const projectSchema = new mongoose.Schema(
         },
       },
     ],
-  },
 
+    updates: [
+      {
+        sender: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        content: {
+          type: String,
+          required: true,
+        },
+        type: {
+          type: String,
+          enum: ["text", "code", "file"],
+          default: "text",
+        },
+        createdAt: {
+          type: Date,
+          default: Date.now,
+        },
+      },
+    ],
+  },
   { timestamps: true }
 );
 

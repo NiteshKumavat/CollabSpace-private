@@ -12,6 +12,7 @@ import { useProfileStore } from "../store/useProfileStore";
 import { useProjectStore } from "../store/useProjectStore";
 import { Toaster } from "react-hot-toast";
 import ProjectDescription from "../components/ProjectDescription.jsx";
+import ProfileGithub from "../components/ProfileGithub.jsx";
 
 export default function Profile() {
     const { id } = useParams();
@@ -21,7 +22,7 @@ export default function Profile() {
     const [showCreateProject, setShowCreateProject] = useState(false); 
 
     const { authUser } = useAuthStore();
-    const { profile, fetchProfile, updateProfile, blockUser, unblockUser, blockedIds } = useProfileStore();
+    const { profile, fetchProfile, updateProfile, blockUser, unblockUser, blockedIds, fetchGithubRepos, githubRepos, loadingGithub, error: githubError } = useProfileStore();
     const { deleteProfile } = useProfileStore();    
 
     const { fetchUserProjects, userProjects} = useProjectStore(); 
@@ -31,7 +32,6 @@ export default function Profile() {
     // ---------- LOCAL STATE ----------
     const [info, setInfo] = useState({
         fullName: "",
-        userName: "",
         email: "",
         bio: "",
         skills: [],
@@ -51,7 +51,6 @@ export default function Profile() {
         if (profile?._id) {
             setInfo({
                 fullName: profile.fullName || "",
-                userName: profile.userName || "",
                 email: profile.email || "",
                 bio: profile.bio || "",
                 skills: profile.skills || [],
@@ -64,8 +63,15 @@ export default function Profile() {
                 isAvailableForCollab: profile.isAvailableForCollab ?? true,
                 blockList: profile.blockList || []
             });
+
+            // Trigger GitHub fetch if a GitHub link exists
+            const githubLink = profile.websites?.find(w => w.websiteName === "GitHub")?.websiteLink;
+            if (githubLink) {
+                // Pass directly to let backend sanitize
+                fetchGithubRepos(githubLink);
+            }
         }
-    }, [profile]);
+    }, [profile, fetchGithubRepos]);
 
     // ---------- FIELD UPDATERS ----------
     const updateField = (field, value) => {
@@ -81,7 +87,15 @@ export default function Profile() {
 
     // ---------- SAVE CHANGES ----------
     const saveChanges = async () => {
-        await updateProfile(info);
+        const websites = [];
+        if (info.links.linkedin) websites.push({ websiteName: "LinkedIn", websiteLink: info.links.linkedin });
+        if (info.links.github) websites.push({ websiteName: "GitHub", websiteLink: info.links.github });
+        if (info.links.portfolio) websites.push({ websiteName: "Portfolio", websiteLink: info.links.portfolio });
+
+        const payload = { ...info, websites };
+        delete payload.links;
+
+        await updateProfile(payload);
         setEditMode(false);
     };
 
@@ -124,6 +138,13 @@ export default function Profile() {
                         editMode={editMode}
                         info={info}
                         updateLink={updateLink}
+                    />
+
+                    <ProfileGithub 
+                        repos={githubRepos} 
+                        loading={loadingGithub} 
+                        username={info.links?.github} 
+                        error={githubError} 
                     />
 
                     {isOwner && (

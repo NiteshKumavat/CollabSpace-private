@@ -17,58 +17,62 @@ const Footer = () => {
           </p>
         </div>
 
-        {/* Quick Links - MAKE THESE WORK */}
+        {/* Quick Links */}
         <div>
           <h4 className="text-white font-semibold mb-6">Quick Links</h4>
           <ul className="space-y-4 text-sm text-gray-400">
             <li><Link to="/" className="hover:text-indigo-400 transition-colors">Home</Link></li>
-            <li><Link to="/" className="hover:text-indigo-400 transition-colors">Projects</Link></li>
+            <li><Link to="/dashboard" className="hover:text-indigo-400 transition-colors">Projects</Link></li>
             <li><Link to="/chats" className="hover:text-indigo-400 transition-colors">Teams</Link></li>
             <li><Link to="/developers" className="hover:text-indigo-400 transition-colors">Developers</Link></li>
           </ul>
         </div>
 
-        {/* Community - LINK TO REAL GITHUB */}
+        {/* Community */}
         <div>
           <h4 className="text-white font-semibold mb-6">Community</h4>
           <ul className="space-y-4 text-sm text-gray-400">
             <li>
-              <a href="https://github.com/your-username/your-repo" target="_blank" rel="noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
+              <a href="https://github.com/Aaryan9" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
                 <Github size={16} /> Github
               </a>
             </li>
             <li>
-              <a href="#" className="flex items-center gap-2 hover:text-white transition-colors">
+              <a href="https://twitter.com/Aaryan9" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
                 <Twitter size={16} /> Twitter
               </a>
             </li>
             <li>
-              <a href="#" className="flex items-center gap-2 hover:text-white transition-colors">
+              <a href="https://linkedin.com/in/aaryan9" target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 hover:text-white transition-colors">
                 <Linkedin size={16} /> LinkedIn
               </a>
             </li>
           </ul>
         </div>
 
-        {/* Contact - UPDATE INFO */}
+        {/* Contact */}
         <div>
           <h4 className="text-white font-semibold mb-6">Contact</h4>
           <ul className="space-y-4 text-sm text-gray-400">
-            <li className="flex items-center gap-1">
-              <Mail size={16} /> collabspace@gmail.com
+            <li>
+              <a href="mailto:collabspace@gmail.com" className="flex items-center gap-2 hover:text-white transition-colors">
+                <Mail size={16} /> collabspace@gmail.com
+              </a>
             </li>
-            <li className="flex items-center gap-2">
-              <Phone size={16} /> +91 91XXXXXXXX
+            <li>
+              <a href="tel:+9191XXXXXXXX" className="flex items-center gap-2 hover:text-white transition-colors">
+                <Phone size={16} /> +91 91XXXXXXXX
+              </a>
             </li>
           </ul>
         </div>
       </div>
 
       <div className="max-w-7xl mx-auto pt-8 border-t border-white/5 text-center">
-        <p className="text-gray-500 text-xs">
-          © {new Date().getFullYear()} CollabSpace. All rights reserved.
-          <span className="mx-2">|</span>
-          <Link to="#" className="hover:text-white">Privacy Policy</Link>
+        <p className="text-gray-500 text-xs flex items-center justify-center gap-2">
+          <span>© {new Date().getFullYear()} CollabSpace. All rights reserved.</span>
+          <span>|</span>
+          <Link to="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
         </p>
       </div>
     </footer>
