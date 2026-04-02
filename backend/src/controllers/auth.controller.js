@@ -101,6 +101,8 @@ export const register = async (req, res) => {
   const { fullName, email, password } = req.body;
   try {
 
+    console.log("Registering user:", email);
+
     if (!fullName || !email || !password) {
       return res.status(400).json({ message: "All fields are required" });
     }
@@ -115,16 +117,19 @@ export const register = async (req, res) => {
     }
 
 
+    console.log("Checking if user exists:", email);
+
+
     const user = await User.findOne({ email });
+    console.log(user)
     if (user) return res.status(400).json({ message: "User already exists in database" })
 
+    console.log("Creating new user:", email);
     const newUser = new User({
       fullName,
       email,
       password
     });
-
-
 
     if (newUser) {
 
@@ -148,9 +153,11 @@ export const register = async (req, res) => {
       });
     }
     else {
+      console.log("Error creating user:", email);
       res.status(400).json({ message: "Error creating user" });
     }
   } catch (error) {
+    console.log("Registration Error:", error);
     res.status(500).json({ message: "INTERNAL SERVER ERROR" })
   }
 }

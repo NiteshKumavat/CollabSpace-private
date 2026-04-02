@@ -82,6 +82,16 @@ export const useMessageStore = create((set, get) => ({
         }
     },
 
+    deleteMessage: async (messageId) => {
+        try {
+            await axiosInstance.delete(`/message/${messageId}`);
+            set({ messages: get().messages.filter(m => m._id !== messageId) });
+        } catch (err) {
+            console.error(err);
+            toast.error("Failed to delete message");
+        }
+    },
+
     // ============================
     // SOCKET Live Updates
     // ============================

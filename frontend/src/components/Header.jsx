@@ -5,13 +5,14 @@ import { Link, useLocation } from "react-router-dom";
 function Header() {
   const { authUser } = useAuthStore();
   const location = useLocation();
+  console.log("Auth User in Header:", authUser);  
 
   if (!authUser) return null;
 
   const { fullName, profilePicture } = authUser;
   const initials = fullName?.charAt(0).toUpperCase();
 
-  // Helper to highlight active link
+
   const isActive = (path) => location.pathname === path
     ? "text-white bg-white/10"
     : "text-gray-400 hover:text-white hover:bg-white/5";
@@ -34,7 +35,7 @@ function Header() {
           </span>
         </Link>
 
-        <div className="hidden md:flex items-center bg-white/5 rounded-full p-1 border border-white/5">
+        <div className="md:flex items-center bg-white/5 rounded-full p-1 border border-white/5">
           <Link
             to="/"
             className={`px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 ${isActive("/")}`}
@@ -66,7 +67,7 @@ function Header() {
         <Link to={`/profile/${authUser._id}`} className="flex items-center gap-3 pl-4 border-l border-white/10 hover:opacity-80 transition-opacity">
           <div className="text-right hidden sm:block">
             <p className="text-sm font-medium text-white leading-none">{fullName}</p>
-            <p className="text-xs text-indigo-400 mt-1">View Profile</p>
+            <p className="text-xs text-indigo-400 mt-1">{authUser.plan}</p>
           </div>
 
           <div className="w-10 h-10 rounded-full border border-white/10 p-0.5 relative overflow-hidden bg-white/5">

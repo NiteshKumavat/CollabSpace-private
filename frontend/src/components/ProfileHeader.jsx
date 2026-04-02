@@ -26,7 +26,11 @@ export default function ProfileHeader({ info, setInfo, isOwner, editMode, setEdi
 
             {isOwner && (
                 <button
-                    className="absolute left-0 top-0 px-5 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl"
+                    className="absolute left-0 top-0 px-5 py-2 
+                    bg-gradient-to-r from-blue-500 to-purple-500 
+                    hover:from-blue-400 hover:to-purple-400 
+                    active:from-blue-300 active:to-purple-300 
+                    text-white rounded-xl transition-all duration-200"
                     onClick={logout}
                 >
                     logout
@@ -35,7 +39,11 @@ export default function ProfileHeader({ info, setInfo, isOwner, editMode, setEdi
 
             {isOwner && (
                 <button
-                    className="absolute right-0 top-0 px-5 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-xl"
+                    className="absolute right-0 top-0 px-5 py-2 
+                    bg-gradient-to-r from-blue-500 to-purple-500 
+                    hover:from-blue-400 hover:to-purple-400 
+                    active:from-blue-300 active:to-purple-300 
+                    text-white rounded-xl transition-all duration-200"
                     onClick={() => (editMode ? saveChanges() : setEditMode(true))}
                 >
                     {editMode ? "Save" : "Edit"}

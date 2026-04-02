@@ -22,7 +22,7 @@ export const getAllProjects = async (req, res) => {
 
     const projects = await Project.find({
       adminId: { $nin: excludedUsers }
-    }).populate("adminId", "fullName userName profilePicture");
+    });
 
 
     const filteredProjects = projects.filter(project =>
@@ -57,8 +57,6 @@ export const createProject = async (req, res) => {
     const adminId = req.user._id;
 
     if (!title || !description) return res.status(400).json({ message: "Title and Description are required" });
-
-    console.log('User Plan:', req.user.plan);
 
     // Enforce Pro plan limit
     if (req.user.plan === "free") {
@@ -300,9 +298,6 @@ export const generateProjectAI = async (req, res) => {
       model: "llama-3.3-70b-versatile", // Currently supported model
       response_format: { type: "json_object" }, // Enforce JSON
     });
-
-    console.log('GROQ API Key Check:', !!process.env.GROQ_API_KEY);
-    console.log('Groq Response:', chatCompletion.choices[0].message.content);
 
     let content = chatCompletion.choices[0].message.content;
 

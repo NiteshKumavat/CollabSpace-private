@@ -61,8 +61,6 @@ export const updateProfile = async (req, res) => {
       updates.profilePicture = upload.secure_url;
     }
 
-    console.log("Updating profile for userId:", userId, "with updates:", updates);
-
     const updated = await Profile.findOneAndUpdate(
       { user: userId },
       updates,
@@ -72,7 +70,6 @@ export const updateProfile = async (req, res) => {
     res.status(200).json(updated);
 
   } catch (error) {
-    console.log(error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
@@ -146,7 +143,6 @@ export const availability = async (req, res) => {
 export const deleteProfile = async (req, res) => {
   try {
     const userId = req.user._id;
-    console.log("Deleting profile for userId:", userId);
 
     const userProjects = await Project.find({
       $or: [
@@ -192,7 +188,6 @@ export const deleteProfile = async (req, res) => {
     res.status(200).json({ message: "Profile deleted successfully" });
 
   } catch (error) {
-    console.log("Error deleting profile:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };

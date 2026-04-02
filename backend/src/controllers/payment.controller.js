@@ -53,17 +53,16 @@ export const verifyPayment = async (req, res) => {
     // Create the expected signature
     const body = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSignature = crypto
-      .createHmac("sha256", ENV.RAZORPAY_KEY_SECRET)
+      .createHmac("sha256", ENV.RAZORPAY_SECRET_KEY)
       .update(body.toString())
       .digest("hex");
 
     const isAuthentic = expectedSignature === razorpay_signature;
 
     if (isAuthentic) {
-      // Payment is successful, upgrade user
       user.plan = "pro";
       user.razorpay_payment_id = razorpay_payment_id;
-      user.razorpay_order_id = razorpay_order_id; // Just to be sure it's updated
+      user.razorpay_order_id = razorpay_order_id; 
       await user.save();
 
       return res.status(200).json({ message: "Payment successful, upgraded to Pro" });

@@ -17,7 +17,7 @@ export default function ChatWindow({ project }) {
   const messageEndRef = useRef(null);
 
 
-  const { messages, fetchMessages, sendMessage, subscribeToMessages, unsubscribeFromMessages } = useMessageStore();
+  const { messages, fetchMessages, sendMessage, deleteMessage, subscribeToMessages, unsubscribeFromMessages } = useMessageStore();
   const { authUser } = useAuthStore();
 
   useEffect(() => {
@@ -56,6 +56,10 @@ export default function ChatWindow({ project }) {
 
     setText("");
     removeImage();
+  };
+
+  const deleteMessages = async (messageId) => {
+    await deleteMessage(messageId);
   };
 
   if (!project) {
@@ -138,11 +142,19 @@ export default function ChatWindow({ project }) {
                   </span>
                 )}
 
-                <div className={`relative px-4 py-3 rounded-2xl shadow-sm border ${
+                <div className={`relative px-4 py-3 rounded-2xl shadow-sm border group ${
                   isMe 
                     ? "bg-indigo-600 border-indigo-500 text-white rounded-tr-none shadow-indigo-500/10" 
                     : "bg-white/5 border-white/10 text-gray-200 rounded-tl-none"
                 }`}>
+                  {isMe && (
+                    <button
+                      onClick={() => deleteMessages(msg._id)}
+                      className="absolute -top-2 -right-2 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition"
+                    >
+                      <FaTimes size={10} />
+                    </button>
+                  )}
                   {msg.image && (
                     <img
                       src={msg.image}
