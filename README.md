@@ -176,7 +176,7 @@ To enable email features (notifications, password reset, etc.), configure your e
 
 ## 👤 Author
 
-NiteshKumavat
+Nitesh Kumavat
 
 ---
 
