@@ -10,8 +10,6 @@ import projectRoutes from "./routes/project.route.js";
 import messageRoutes from "./routes/message.route.js"; // Ensure this file exists
 import profileRoutes from "./routes/profile.route.js";
 import paymentRoutes from "./routes/payment.route.js";
-
-// 🛑 CHANGE: Import app & server from socket.js, NOT express()
 import { app, server } from "./lib/socket.js"; 
 
 const PORT = ENV.PORT;

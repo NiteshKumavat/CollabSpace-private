@@ -13,7 +13,6 @@ import Developers from "./pages/Developers.jsx";
 import Chat from "./pages/Chat.jsx";
 import ForgotPassword from "./pages/ForgotPassword.jsx";
 
-// Component Imports
 import PageLoader from "./components/PageLoader.jsx";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
@@ -36,9 +35,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen flex flex-col font-sans bg-[#0B0C15]">
-      <Toaster
-        position="top-center"
-        reverseOrder={false}
+      <Toaster position="top-center" reverseOrder={false}
         toastOptions={{
           style: {
             zIndex: 9999,
